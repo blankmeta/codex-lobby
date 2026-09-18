@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="713" viewBox="0 0 1280 713" role="img" aria-labelledby="title desc">
+<title id="title">A Codex Switch terminal session</title>
+<desc id="desc">Illustrative run using the real CLI formatter and fictional accounts. Two accounts show remaining 5-hour and weekly allowances. Select account 2 to start Codex.</desc>
+<rect x="1" y="1" width="1278" height="711" rx="16" fill="#0c1511" stroke="#2c4336"/>
+<path d="M1 57H1279" stroke="#273c30"/>
+<circle cx="29" cy="29" r="5.5" fill="#d67b70"/><circle cx="48" cy="29" r="5.5" fill="#c9aa63"/><circle cx="67" cy="29" r="5.5" fill="#81ae78"/>
+<text x="640" y="34" text-anchor="middle" fill="#6e8a77" font-size="12" font-family="-apple-system,Segoe UI,Arial,sans-serif">codex-switch · terminal</text>
+<g font-family="SFMono-Regular,Consolas,Liberation Mono,monospace" font-size="17" xml:space="preserve">
+<text x="42" y="97" fill="#b9ef9d">$ codex-switch</text>
+<text x="42" y="122" fill="#c7d8c5"></text>
+<text x="42" y="147" fill="#c7d8c5">  Your ChatGPT accounts</text>
+<text x="42" y="172" fill="#c7d8c5"></text>
+<text x="42" y="197" fill="#c7d8c5">  1. ● Personal  [plus]</text>
+<text x="42" y="222" fill="#99af9c">       alex@example.com</text>
+<text x="42" y="247" fill="#b9ef9d">       Remaining: 5h 76% · Weekly 62%</text>
+<text x="42" y="272" fill="#758f7b">       Snapshot: 18 Sep 12:00 · cache</text>
+<text x="42" y="297" fill="#758f7b">       5h window resets: 18 Sep 14:00</text>
+<text x="42" y="322" fill="#758f7b">       168h window resets: 20 Sep 12:00</text>
+<text x="42" y="347" fill="#c7d8c5"></text>
+<text x="42" y="372" fill="#c7d8c5">  2.   Work  [business]</text>
+<text x="42" y="397" fill="#99af9c">       alex@company.example</text>
+<text x="42" y="422" fill="#b9ef9d">       Remaining: 5h 92% · Weekly 84%</text>
+<text x="42" y="447" fill="#758f7b">       Snapshot: 18 Sep 12:00 · cache</text>
+<text x="42" y="472" fill="#758f7b">       5h window resets: 18 Sep 15:00</text>
+<text x="42" y="497" fill="#758f7b">       168h window resets: 21 Sep 12:00</text>
+<text x="42" y="522" fill="#c7d8c5"></text>
+<text x="42" y="547" fill="#758f7b">  Limits are snapshots, not a token balance. Refresh: codex-switch accounts --refresh</text>
+<text x="42" y="572" fill="#c7d8c5"></text>
+<text x="42" y="597" fill="#b9ef9d">Account number [Enter = 1]: 2</text>
+<text x="42" y="622" fill="#c7d8c5"></text>
+<text x="42" y="647" fill="#b9ef9d">Starting Codex…</text>
+</g>
+<text x="1236" y="691" text-anchor="end" font-family="-apple-system,Segoe UI,Arial,sans-serif" font-size="10" fill="#536f5c" letter-spacing="1.6">EXAMPLE DATA · REAL CLI OUTPUT</text>
+</svg>

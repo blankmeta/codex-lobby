@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="368" viewBox="0 0 1280 368" role="img" aria-labelledby="title desc">
+  <title id="title">Codex Switch</title>
+  <desc id="desc">Switch ChatGPT accounts for Codex. See usage limits before you start. An account-first terminal launcher with optional VLESS connectivity.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#10291f"/><stop offset="1" stop-color="#09120f"/></linearGradient>
+    <linearGradient id="line"><stop stop-color="#acd6a5"/><stop offset="1" stop-color="#acd6a5" stop-opacity="0"/></linearGradient>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M40 0H0V40" fill="none" stroke="#729d80" stroke-opacity=".075"/></pattern>
+  </defs>
+  <rect width="1280" height="368" rx="20" fill="url(#bg)"/>
+  <rect width="1280" height="368" rx="20" fill="url(#grid)"/>
+  <path d="M820 0V368" stroke="#5a8268" stroke-opacity=".17"/>
+  <circle cx="1042" cy="172" r="116" fill="none" stroke="#689277" stroke-opacity=".15"/>
+  <circle cx="1042" cy="172" r="146" fill="none" stroke="#689277" stroke-opacity=".08"/>
+  <g font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif">
+    <circle cx="66" cy="61" r="4" fill="#b9ef9d"/>
+    <text x="81" y="65" fill="#b2c7b4" font-size="11" font-weight="600" letter-spacing="2.6">CHATGPT ACCOUNTS FOR CODEX</text>
+    <text x="60" y="156" fill="#f1f6e9" font-size="76" font-weight="650" letter-spacing="-4">Codex <tspan fill="#b9ef9d">Switch</tspan></text>
+    <text x="64" y="205" fill="#c0d1bf" font-size="23" letter-spacing="-.4">Choose your account. See your limits.</text>
+    <text x="65" y="236" fill="#8fa795" font-size="17">Launch Codex with the account you want to use.</text>
+    <path d="M64 269H748" stroke="url(#line)" stroke-opacity=".28"/>
+    <text x="65" y="310" fill="#7f9985" font-size="11" letter-spacing="1.5">MACOS</text>
+    <circle cx="133" cy="306" r="2" fill="#57715e"/>
+    <text x="153" y="310" fill="#7f9985" font-size="11" letter-spacing="1.5">HOMEBREW</text>
+    <circle cx="251" cy="306" r="2" fill="#57715e"/>
+    <text x="271" y="310" fill="#7f9985" font-size="11" letter-spacing="1.5">OPTIONAL VLESS</text>
+  </g>
+  <g transform="translate(966 96)">
+    <rect width="152" height="152" rx="36" fill="#183c29" stroke="#63865f" stroke-opacity=".5"/>
+    <path d="M36 54H119M96 31L119 54 96 77M116 98H33M56 75L33 98 56 121" fill="none" stroke="#b9ef9d" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+  <text x="1042" y="294" text-anchor="middle" fill="#88a28b" font-family="SFMono-Regular,Consolas,monospace" font-size="14">$ codex-switch<tspan fill="#b9ef9d"> ▌</tspan></text>
+</svg>
