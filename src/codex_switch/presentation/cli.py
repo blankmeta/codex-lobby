@@ -2,13 +2,20 @@ from codex_switch import __version__
 from codex_switch.application.service import SwitchApplication
 from codex_switch.domain.errors import SwitchError
 from .console import Console
+from .profiles import ProfileCLI
 
 
 HELP = """Codex Switch — ChatGPT accounts first, optional VLESS proxy.
 
   codex-switch                     Choose an account and launch Codex
   codex-switch setup               Set up your connection
-  codex-switch login               Add another ChatGPT account
+  codex-switch login [name]        Sign in to an isolated account profile
+  codex-switch run <name>          Launch an isolated profile
+  codex-switch bind [name]         Remember a profile for this project
+  codex-switch unbind              Remove this project preference
+  codex-switch profiles            Show profiles and usage snapshots
+  codex-switch status --json       Machine-readable profile status
+  codex-switch legacy [command]    Use original accounts and shared history
   codex-switch accounts            Show accounts and saved usage limits
   codex-switch accounts --refresh  Refresh usage limits from OpenAI
   codex-switch switch              Switch the account without launching Codex
@@ -50,9 +57,11 @@ class CLI:
               f"\n✓ Сохранено: {server.name}. Прокси запустится при запуске Codex.")
         c.say("Next: codex-switch", "Дальше: codex-switch")
 
-    def run(self, args: list[str]) -> int:
+    def run(self, args: list[str], *, legacy: bool = False) -> int:
         c = self.console
         command = args[0] if args else ""
+        if command == "legacy":
+            return self.run(args[1:], legacy=True)
         if command in ("--help", "-h", "help"):
             c.write(HELP)
             return 0
@@ -81,6 +90,10 @@ class CLI:
             else:
                 c.say("✓ Normal connection selected.", "✓ Выбрано обычное подключение.")
             return 0
+        if self.app.profiles is not None and not legacy:
+            handled = ProfileCLI(self.app, c).handle(args)
+            if handled is not None:
+                return handled
         if command == "accounts":
             accounts = self.app.list_accounts(refresh="--refresh" in args)
             if accounts:
@@ -100,6 +113,10 @@ class CLI:
             return 0
         accounts = self.app.list_accounts()
         if not accounts:
+            if self.app.profiles is not None and not legacy:
+                profiles = ProfileCLI(self.app, c)
+                name = profiles.login("personal")
+                return profiles.launch(name, args[1:] if command == "--" else args)
             c.say("\nOne more step: sign in to your ChatGPT account in the browser.", "\nОстался один шаг: войди в свой ChatGPT-аккаунт в браузере.")
             self.app.add_account()
             accounts = self.app.list_accounts()

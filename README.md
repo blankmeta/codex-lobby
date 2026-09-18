@@ -10,7 +10,7 @@
 </p>
 
 <p align="center">
-  Switch ChatGPT accounts and check usage limits before launching Codex.
+  Your ChatGPT accounts, usage limits, and project profiles for Codex.
 </p>
 
 <p align="center">
@@ -26,11 +26,13 @@ brew install blankmeta/tap/codex-switch
 codex-switch
 ```
 
-Follow the setup prompts, then type an account number to start Codex. Press **Enter** to keep the selected account.
+Follow the setup prompts and sign in. Add a work profile with `codex-switch login work`, then run `codex-switch bind work` in your project. Press **Enter** to use its saved profile.
+
+Different profiles can run at the same time with separate sign-in and history. [Profiles and migration →](docs/profiles.md)
 
 <p align="center">
-  <img src="docs/assets/terminal.svg" alt="Terminal example: Personal has 76% of its five-hour allowance remaining, Work has 92%. Enter 2 to start Codex with Work." width="100%">
-  <br><sub>Real CLI output with fictional accounts.</sub>
+  <img src="docs/assets/profiles-fa292834.svg" alt="Profile picker: personal is running; work is the project default with 92% of its five-hour allowance remaining. Press Enter to launch work." width="100%">
+  <br><sub>CLI preview with synthetic accounts.</sub>
 </p>
 
 ## Commands
@@ -38,12 +40,14 @@ Follow the setup prompts, then type an account number to start Codex. Press **En
 | Run | To… |
 | :--- | :--- |
 | `codex-switch` | Choose an account and start Codex |
-| `codex-switch login` | Add a ChatGPT account |
-| `codex-switch accounts --refresh` | Check current usage limits |
-| `codex-switch resume` | Choose an account and resume Codex |
+| `codex-switch login work` | Add an isolated ChatGPT account |
+| `codex-switch profiles --refresh` | Check current usage limits |
+| `codex-switch bind work` | Remember this project’s profile |
 | `codex-switch setup` | Change the connection |
 
-Usage figures are cached snapshots of five-hour and weekly allowances. Refresh them with the command above. Restart existing Codex sessions after switching accounts.
+Usage figures are cached snapshots. One Codex process runs per profile; other profiles can run alongside it. Original accounts and history remain available through `codex-switch legacy`.
+
+[All commands](docs/usage.md) · [JSON & terminal integrations](docs/integrations.md) · [Changelog](CHANGELOG.md)
 
 **Need a proxy?** Run `codex-switch setup` and paste a VLESS link. The proxy applies to launched processes. See [connection settings and all commands](docs/usage.md).
 

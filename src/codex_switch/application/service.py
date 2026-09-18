@@ -1,14 +1,16 @@
-from codex_switch.application.ports import Accounts, Codex, Diagnostics, Proxy, Servers, Settings
+from codex_switch.application.ports import Accounts, Codex, Diagnostics, Proxy, Servers, Settings, Profiles, Projects
+from codex_switch.domain.profiles import profile_name, validate_profile_arguments
 from codex_switch.domain.errors import SwitchError
 from codex_switch.domain.models import Account, Preferences, Server
 from codex_switch.domain.vless import parse_vless
 
 
 class SwitchApplication:
-    def __init__(self, settings: Settings, servers: Servers, accounts: Accounts, proxy: Proxy, codex: Codex, diagnostics: Diagnostics):
+    def __init__(self, settings: Settings, servers: Servers, accounts: Accounts, proxy: Proxy, codex: Codex, diagnostics: Diagnostics, profiles: Profiles | None = None, projects: Projects | None = None):
         self.settings, self.servers = settings, servers
         self.accounts, self.proxy, self.codex = accounts, proxy, codex
         self.diagnostics = diagnostics
+        self.profiles, self.projects = profiles, projects
 
     def use_direct_connection(self) -> None:
         self.settings.save(Preferences(configured=True))
@@ -53,3 +55,22 @@ class SwitchApplication:
 
     def select_account(self, account_key: str) -> None:
         self.accounts.switch(account_key, proxy=self.connection())
+
+    def profile_status(self, *, refresh: bool = False):
+        proxy = self.connection() if refresh else None
+        return [self.profiles.inspect(name, refresh=refresh, proxy=proxy) for name in self.profiles.names()]
+
+    def login_profile(self, name: str):
+        profile_name(name)
+        return self.profiles.login(name, proxy=self.connection())
+
+    def bind_profile(self, name: str) -> None:
+        profile_name(name)
+        if name not in self.profiles.names():
+            raise SwitchError("Profile not found. Create it with codex-switch login <name>.")
+        self.projects.bind(name)
+
+    def launch_profile(self, name: str, args: list[str]) -> int:
+        profile_name(name)
+        validate_profile_arguments(args)
+        return self.profiles.run(name, args, proxy=self.connection())

@@ -6,6 +6,8 @@ from .infrastructure.accounts import CodexAuth
 from .infrastructure.processes import CodexProcess, ProcessDiagnostics
 from .infrastructure.storage import JsonServers, JsonSettings
 from .infrastructure.xray import XrayProxy
+from .infrastructure.profiles import LocalProfiles
+from .infrastructure.projects import JsonProjects
 
 
 def build_application() -> SwitchApplication:
@@ -15,4 +17,4 @@ def build_application() -> SwitchApplication:
     servers = JsonServers(directory, legacy)
     settings = JsonSettings(directory, servers)
     port = int(os.environ.get("CODEX_PROXY_PORT", "10810"))
-    return SwitchApplication(settings, servers, CodexAuth(), XrayProxy(directory, port, legacy), CodexProcess(), ProcessDiagnostics())
+    return SwitchApplication(settings, servers, CodexAuth(), XrayProxy(directory, port, legacy), CodexProcess(), ProcessDiagnostics(), LocalProfiles(directory), JsonProjects(directory))

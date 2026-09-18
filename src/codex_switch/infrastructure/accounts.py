@@ -3,7 +3,7 @@ import subprocess
 
 from codex_switch.domain.errors import SwitchError
 from codex_switch.domain.models import Account, UsageWindow
-from .processes import connection_environment, require_binary
+from .processes import connection_environment, profile_environment, require_binary
 
 
 def decode_account(row: dict) -> Account:
@@ -21,8 +21,11 @@ def decode_account(row: dict) -> Account:
 
 
 class CodexAuth:
-    def __init__(self, runner=subprocess.run, binary: str | None = None):
-        self.runner, self.binary = runner, binary
+    def __init__(self, runner=subprocess.run, binary: str | None = None, home=None):
+        self.runner, self.binary, self.home = runner, binary, home
+
+    def environment(self, proxy):
+        return profile_environment(self.home, proxy) if self.home else connection_environment(proxy)
 
     def command(self):
         return self.binary or require_binary("codex-auth")
@@ -30,7 +33,7 @@ class CodexAuth:
     def _json(self, args: list[str], proxy: str | None) -> dict:
         try:
             result = self.runner([self.command(), *args, "--json"], stdin=subprocess.DEVNULL, capture_output=True,
-                                 text=True, timeout=90, env=connection_environment(proxy))
+                                 text=True, timeout=90, env=self.environment(proxy))
         except subprocess.TimeoutExpired:
             raise SwitchError("Обновление аккаунтов не ответило. Повтори позже; сохранённые аккаунты доступны.") from None
         try:
@@ -48,7 +51,10 @@ class CodexAuth:
         return data
 
     def list(self, *, refresh: bool = False, proxy: str | None = None) -> list[Account]:
-        data = self._json(["list", "--api" if refresh else "--skip-api"], proxy)
+        args = ["list", "--api" if refresh else "--skip-api"]
+        if self.home:
+            args.append("--active")
+        data = self._json(args, proxy)
         try:
             return [decode_account(row) for row in data["accounts"]]
         except (KeyError, TypeError, ValueError):
@@ -60,6 +66,6 @@ class CodexAuth:
             raise SwitchError("Переключение не подтверждено. Codex не запущен; обнови список аккаунтов.")
 
     def login(self, *, proxy: str | None = None) -> None:
-        result = self.runner([self.command(), "login"], env=connection_environment(proxy))
+        result = self.runner([self.command(), "login"], env=self.environment(proxy))
         if result.returncode:
             raise SwitchError("Вход не завершён. Повтори: codex-switch login")

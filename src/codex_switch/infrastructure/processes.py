@@ -39,3 +39,12 @@ class CodexProcess:
 class ProcessDiagnostics:
     def dependencies(self) -> dict[str, str]:
         return {name: require_binary(name) for name in ("codex", "codex-auth", "xray", "node")}
+
+
+def profile_environment(home, proxy: str | None, base: dict | None = None) -> dict:
+    env = connection_environment(proxy, base)
+    for key in ("OPENAI_API_KEY", "CODEX_API_KEY", "OPENAI_BASE_URL", "CODEX_SQLITE_HOME"):
+        env.pop(key, None)
+    env["CODEX_HOME"] = str(home)
+    env["CODEX_SQLITE_HOME"] = str(home)
+    return env

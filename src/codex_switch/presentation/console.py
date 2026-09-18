@@ -61,3 +61,31 @@ class Console:
         active = next((i for i, a in enumerate(accounts, 1) if a.active), 1)
         index = self.choice(f"\nAccount number [Enter = {active}]: ", f"\nНомер аккаунта [Enter = {active}]: ", len(accounts), active)
         return accounts[index - 1].key
+
+    def show_profiles(self, profiles, bound=None) -> None:
+        self.say("\n  Your Codex profiles\n", "\n  Твои профили Codex\n")
+        if not profiles:
+            self.say("  Add your first profile: codex-switch login personal", "  Добавь первый профиль: codex-switch login personal")
+            return
+        if bound:
+            self.say(f"  Project default: {bound}\n", f"  Для этого проекта: {bound}\n")
+        for index, profile in enumerate(profiles, 1):
+            marker = "●" if profile.name == bound else " "
+            state = self.text("running", "работает") if profile.running else self.text("ready", "готов")
+            account = profile.account
+            if profile.problem or not account or account.needs_login:
+                state = self.text("needs attention", "нужно проверить")
+            self.write(f"  {index}. {marker} {profile.name} · {state}")
+            if account:
+                primary = f"{account.primary.remaining}%" if account.primary else "—"
+                weekly = f"{account.secondary.remaining}%" if account.secondary else "—"
+                self.write(f"       {account.email} [{account.plan}]")
+                self.say(f"       Remaining: 5h {primary} · Weekly {weekly}", f"       Осталось: 5 ч {primary} · Неделя {weekly}")
+                date = datetime.fromtimestamp(account.updated_at).strftime("%d %b %H:%M") if account.updated_at else "—"
+                self.say(f"       Snapshot: {date} · {account.source}", f"       Данные: {date} · {account.source}")
+            if profile.problem:
+                self.write(f"       {profile.problem}")
+            if account and account.needs_login:
+                self.write(f"       codex-switch login {profile.name}")
+        self.say("\n  Refresh: codex-switch profiles --refresh. Running profiles keep cached data.",
+                 "\n  Обновить: codex-switch profiles --refresh. У работающих профилей данные из кеша.")

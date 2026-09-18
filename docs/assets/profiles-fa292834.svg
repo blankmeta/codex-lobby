@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="656" viewBox="0 0 1280 656" role="img" aria-labelledby="title desc">
+<title id="title">Codex Switch profile picker</title>
+<desc id="desc">Personal is running. Work is the project default. Press Enter to launch Work alongside Personal. Synthetic accounts.</desc>
+<rect width="1280" height="656" rx="8" fill="#181b19"/>
+<text x="38" y="34" fill="#7f8b82" font-family="Helvetica,Arial,sans-serif" font-size="14">codex-switch</text>
+<path d="M0 50H1280" stroke="#30372f"/>
+<text x="38" y="86" fill="#aec89f" font-family="SFMono-Regular,Consolas,monospace" font-size="18" xml:space="preserve">$ codex-switch</text>
+<text x="38" y="112" fill="#e4e9e1" font-family="SFMono-Regular,Consolas,monospace" font-size="18" xml:space="preserve"></text>
+<text x="38" y="138" fill="#e4e9e1" font-family="SFMono-Regular,Consolas,monospace" font-size="18" xml:space="preserve">  Your Codex profiles</text>
+<text x="38" y="164" fill="#e4e9e1" font-family="SFMono-Regular,Consolas,monospace" font-size="18" xml:space="preserve"></text>
+<text x="38" y="190" fill="#e4e9e1" font-family="SFMono-Regular,Consolas,monospace" font-size="18" xml:space="preserve">  Project default: work</text>
+<text x="38" y="216" fill="#e4e9e1" font-family="SFMono-Regular,Consolas,monospace" font-size="18" xml:space="preserve"></text>
+<text x="38" y="242" fill="#e4e9e1" font-family="SFMono-Regular,Consolas,monospace" font-size="18" xml:space="preserve">  1.   personal · running</text>
+<text x="38" y="268" fill="#e4e9e1" font-family="SFMono-Regular,Consolas,monospace" font-size="18" xml:space="preserve">       alex@example.com [plus]</text>
+<text x="38" y="294" fill="#e4e9e1" font-family="SFMono-Regular,Consolas,monospace" font-size="18" xml:space="preserve">       Remaining: 5h 76% · Weekly 62%</text>
+<text x="38" y="320" fill="#9aa69d" font-family="SFMono-Regular,Consolas,monospace" font-size="18" xml:space="preserve">       Snapshot: 18 Sep 12:00 · cache</text>
+<text x="38" y="346" fill="#e4e9e1" font-family="SFMono-Regular,Consolas,monospace" font-size="18" xml:space="preserve">  2. ● work · ready</text>
+<text x="38" y="372" fill="#e4e9e1" font-family="SFMono-Regular,Consolas,monospace" font-size="18" xml:space="preserve">       alex@company.example [business]</text>
+<text x="38" y="398" fill="#e4e9e1" font-family="SFMono-Regular,Consolas,monospace" font-size="18" xml:space="preserve">       Remaining: 5h 92% · Weekly 84%</text>
+<text x="38" y="424" fill="#9aa69d" font-family="SFMono-Regular,Consolas,monospace" font-size="18" xml:space="preserve">       Snapshot: 18 Sep 12:00 · cache</text>
+<text x="38" y="450" fill="#e4e9e1" font-family="SFMono-Regular,Consolas,monospace" font-size="18" xml:space="preserve"></text>
+<text x="38" y="476" fill="#9aa69d" font-family="SFMono-Regular,Consolas,monospace" font-size="18" xml:space="preserve">  Refresh: codex-switch profiles --refresh. Running profiles keep cached data.</text>
+<text x="38" y="502" fill="#e4e9e1" font-family="SFMono-Regular,Consolas,monospace" font-size="18" xml:space="preserve"></text>
+<text x="38" y="528" fill="#aec89f" font-family="SFMono-Regular,Consolas,monospace" font-size="18" xml:space="preserve">Profile [Enter = 2]: ↵</text>
+<text x="38" y="554" fill="#e4e9e1" font-family="SFMono-Regular,Consolas,monospace" font-size="18" xml:space="preserve"></text>
+<text x="38" y="580" fill="#aec89f" font-family="SFMono-Regular,Consolas,monospace" font-size="18" xml:space="preserve">Starting Codex · work</text>
+<text x="38" y="606" fill="#e4e9e1" font-family="SFMono-Regular,Consolas,monospace" font-size="18" xml:space="preserve"></text>
+</svg>
