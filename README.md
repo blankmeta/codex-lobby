@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/assets/hero.svg" alt="Codex Switch: Your accounts. Your limits. One place." width="100%">
+  <img src="docs/assets/hero-f55e14fe.svg" alt="Codex Switch: Your accounts. Your limits. One place." width="100%">
 </p>
 
 <p align="center">
