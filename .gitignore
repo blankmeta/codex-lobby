@@ -10,3 +10,9 @@ config.json
 servers.json
 subscription_url.txt
 xray.pid
+*.egg-info/
+.venv/
+build/
+dist/
+.coverage
+htmlcov/

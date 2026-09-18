@@ -1,0 +1,115 @@
+from codex_switch import __version__
+from codex_switch.application.service import SwitchApplication
+from codex_switch.domain.errors import SwitchError
+from .console import Console
+
+
+HELP = """Codex Switch — ChatGPT accounts first, optional VLESS proxy.
+
+  codex-switch                     Choose an account and launch Codex
+  codex-switch setup               Set up your connection
+  codex-switch login               Add another ChatGPT account
+  codex-switch accounts            Show accounts and saved usage limits
+  codex-switch accounts --refresh  Refresh usage limits from OpenAI
+  codex-switch switch              Switch the account without launching Codex
+  codex-switch stop                Stop this app's proxy
+  codex-switch doctor              Check dependencies and connection
+  codex-switch resume              Choose an account and resume Codex
+  codex-switch -- <arguments>      Pass arguments to Codex
+
+  CODEX_SWITCH_LANG=ru codex-switch  Русский интерфейс
+"""
+
+
+class CLI:
+    def __init__(self, app: SwitchApplication, console: Console):
+        self.app, self.console = app, console
+
+    def setup(self, *, force_proxy=False) -> None:
+        c = self.console
+        c.say("\n  Codex Switch · Connection setup\n", "\n  Codex Switch · Настройка подключения\n")
+        if not force_proxy:
+            c.say("  1. Normal connection\n  2. Use a VLESS link", "  1. Обычное подключение\n  2. Подключиться по VLESS-ссылке")
+            choice = c.choice("\nChoose [Enter = 1]: ", "\nВыбери [Enter = 1]: ", 2)
+            if choice == 1:
+                self.app.use_direct_connection()
+                c.say("\n✓ Ready. Next: codex-switch", "\n✓ Готово. Дальше: codex-switch")
+                return
+        c.say("\nCopy the vless:// link from your VPN provider and paste it below.", "\nСкопируй ссылку vless:// у своего VPN-провайдера и вставь её ниже.")
+        while True:
+            uri = c.ask("\nVLESS link (Enter to cancel): ", "\nVLESS-ссылка (Enter — отмена): ")
+            if not uri:
+                c.say("Cancelled. Your settings are unchanged.", "Отменено. Настройки не изменены.")
+                return
+            try:
+                server = self.app.add_server(uri)
+                break
+            except SwitchError as exc:
+                c.write(str(exc))
+        c.say(f"\n✓ Saved: {server.name}. The proxy will start when you launch Codex.",
+              f"\n✓ Сохранено: {server.name}. Прокси запустится при запуске Codex.")
+        c.say("Next: codex-switch", "Дальше: codex-switch")
+
+    def run(self, args: list[str]) -> int:
+        c = self.console
+        command = args[0] if args else ""
+        if command in ("--help", "-h", "help"):
+            c.write(HELP)
+            return 0
+        if command in ("--version", "-V"):
+            c.write(f"codex-switch {__version__}")
+            return 0
+        if command == "setup":
+            self.setup(force_proxy="--proxy" in args)
+            return 0
+        if command == "stop":
+            self.app.proxy.stop()
+            c.say("✓ Proxy stopped. Saved accounts and links are kept.", "✓ Прокси остановлен. Аккаунты и ссылки сохранены.")
+            return 0
+        if command == "doctor":
+            for binary, path in self.app.diagnostics.dependencies().items():
+                c.write(f"✓ {binary}: {path}")
+            settings = self.app.settings.load()
+            if settings.proxy_enabled:
+                state = self.app.proxy.status()
+                if not state.running:
+                    c.say("Proxy is stopped. It starts with your next Codex session.", "Прокси остановлен. Он запустится при следующем запуске Codex.")
+                elif self.app.proxy.check():
+                    c.say("✓ OpenAI is reachable through the proxy.", "✓ OpenAI доступен через прокси.")
+                else:
+                    raise SwitchError(c.text("OpenAI is not reachable through the proxy. Check your VLESS link.", "OpenAI недоступен через прокси. Проверь VLESS-ссылку."))
+            else:
+                c.say("✓ Normal connection selected.", "✓ Выбрано обычное подключение.")
+            return 0
+        if command == "accounts":
+            accounts = self.app.list_accounts(refresh="--refresh" in args)
+            if accounts:
+                c.show_accounts(accounts)
+            else:
+                c.say("No accounts yet. Add one: codex-switch login", "Аккаунтов пока нет. Добавить: codex-switch login")
+            return 0
+        if not self.app.settings.load().configured:
+            c.say("Welcome! First, choose how Codex connects.", "Привет! Сначала выбери, как Codex будет подключаться.")
+            self.setup()
+            if not self.app.settings.load().configured:
+                return 0
+        if command == "login":
+            c.say("Sign in to ChatGPT in the browser. Then return to this terminal.", "Войди в ChatGPT в браузере, затем вернись в этот терминал.")
+            self.app.add_account()
+            c.say("✓ Account saved. Start with: codex-switch", "✓ Аккаунт сохранён. Запустить: codex-switch")
+            return 0
+        accounts = self.app.list_accounts()
+        if not accounts:
+            c.say("\nOne more step: sign in to your ChatGPT account in the browser.", "\nОстался один шаг: войди в свой ChatGPT-аккаунт в браузере.")
+            self.app.add_account()
+            accounts = self.app.list_accounts()
+            if not accounts:
+                raise SwitchError(c.text("No saved account found. Try codex-switch login.", "Аккаунт не сохранился. Повтори: codex-switch login"))
+        key = c.pick_account(accounts)
+        if command == "switch":
+            self.app.select_account(key)
+            c.say("✓ Account selected. Restart existing Codex sessions to use it.", "✓ Аккаунт выбран. Перезапусти существующие сессии Codex, чтобы они использовали его.")
+            return 0
+        forwarded = args[1:] if command == "--" else args
+        c.say("\nStarting Codex…\n", "\nЗапускаю Codex…\n")
+        return self.app.launch(key, forwarded)
