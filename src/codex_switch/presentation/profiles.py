@@ -44,17 +44,15 @@ class ProfileCLI:
         self.app, self.c = app, console
 
     def login(self, name=None):
-        if name is None:
-            default = "personal" if not self.app.profiles.names() else "work"
-            name = self.c.ask(f"Profile name [Enter = {default}]: ", f"Имя профиля [Enter = {default}]: ") or default
-        profile_name(name)
+        if name is not None:
+            profile_name(name)
         if not self.app.settings.load().configured:
             self.app.use_direct_connection()
         self.c.say("Sign in to ChatGPT in the browser. This profile has its own sessions.",
                    "Войди в ChatGPT в браузере. У этого профиля будет отдельная история сессий.")
-        self.app.login_profile(name)
-        self.c.say(f"✓ Saved '{name}'. Start: codex-switch run {name}", f"✓ Сохранён '{name}'. Запустить: codex-switch run {name}")
-        return name
+        status = self.app.login_profile(name)
+        self.c.say(f"✓ Saved '{status.title}'. Start: codex-switch", f"✓ Сохранён '{status.title}'. Запустить: codex-switch")
+        return status.name
 
     def choose(self):
         profiles = self.app.profile_status()

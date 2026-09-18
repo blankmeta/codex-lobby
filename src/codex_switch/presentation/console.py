@@ -1,7 +1,7 @@
 from datetime import datetime
 import os
 
-from codex_switch.domain.errors import SwitchError
+from codex_switch.domain.errors import SwitchError, Cancelled
 from codex_switch.domain.models import Account
 
 
@@ -20,7 +20,7 @@ class Console:
         try:
             return self.read(self.text(en, ru)).strip()
         except (EOFError, KeyboardInterrupt):
-            raise SwitchError(self.text("Cancelled. Nothing else was changed.", "Отменено. Другие настройки не изменены.")) from None
+            raise Cancelled(self.text("Cancelled. Nothing else was changed.", "Отменено. Другие настройки не изменены.")) from None
 
     def choice(self, en: str, ru: str, count: int, default: int = 1) -> int:
         while True:
@@ -30,6 +30,16 @@ class Console:
             if value.isdigit() and 1 <= int(value) <= count:
                 return int(value)
             self.say(f"Enter a number from 1 to {count}.", f"Введи число от 1 до {count}.")
+
+    def secret(self, en: str, ru: str) -> str:
+        import sys
+        if self.read is input and sys.stdin.isatty():
+            import getpass
+            try:
+                return getpass.getpass(self.text(en, ru)).strip()
+            except (EOFError, KeyboardInterrupt):
+                raise Cancelled("Cancelled.") from None
+        return self.ask(en, ru)
 
     def show_accounts(self, accounts: list[Account]) -> None:
         self.say("\n  Your ChatGPT accounts\n", "\n  Твои аккаунты ChatGPT\n")

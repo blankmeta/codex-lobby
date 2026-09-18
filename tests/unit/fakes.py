@@ -41,7 +41,9 @@ class FakeProxy:
         if self.error: raise self.error
         self.state = ProxyStatus(True, "http://127.0.0.1:10810", server.id)
         return self.state
-    def stop(self): self.events.append(("stop",))
+    def stop(self):
+        self.events.append(("stop",))
+        self.state = ProxyStatus()
     def check(self): return True
 
 

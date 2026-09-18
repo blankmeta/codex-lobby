@@ -4,17 +4,33 @@
 
 ## First launch
 
-Run `codex-switch` and follow the connection and sign-in prompts. A new installation creates a `personal` profile. Add another with `codex-switch login work` and select it when launching. See [profiles, concurrent sessions, and migration](profiles.md).
+Run `codex-switch`, choose **Add ChatGPT account**, and sign in in your browser. The app uses the email as its display name and starts Codex after the first sign-in. Choose **Settings → Manage accounts → Rename account** to give it a label such as Work or Personal. Unicode names and spaces are supported.
 
-Existing codex-auth accounts remain the default until you create a managed profile. Use `codex-switch legacy` to return to the original accounts and shared history at any time.
+Use arrows and Enter; Esc goes back. Terminals without interactive input use numbered choices, with `q` to go back. A single-account installation still shows the menu, so adding an account and settings remain accessible.
+
+Existing codex-auth accounts remain in the same list, marked **original**. Their original history stays available even after adding a separate account. See [accounts, concurrent sessions, and migration](profiles.md).
+
+## Everyday actions
+
+| Action | Menu path |
+| --- | --- |
+| Start Codex | Choose an account → Enter |
+| Add another account | Add ChatGPT account |
+| Continue work | Continue a saved session → account → Codex's session picker |
+| Remember an account | Settings → Account for this project |
+| Rename, sign in again, or remove | Settings → Manage accounts → account |
+| Change language | Settings → Language / Язык |
+| Set up VLESS | Settings → Connection → Paste a VLESS link |
+
+Removing an added account requires confirmation and deletes its saved sign-in and local history. Original accounts are managed by codex-auth and cannot be deleted from this menu. A missing project account asks you to choose another; it never silently launches a different identity.
 
 ## Usage limits
 
-The picker shows remaining five-hour and weekly allowances, snapshot dates, and available reset times. Missing data appears as `—`. Percentages describe usage windows, not a token balance. Run `codex-switch accounts --refresh` to request fresh data from OpenAI. Restart existing legacy Codex sessions to use another account. Managed profiles start separate sessions.
+The picker shows remaining five-hour and weekly allowances. The selected row shows data age and available reset countdowns. Missing data appears as `—`; `?` means the saved window has passed its reset time and needs refreshing. Percentages describe usage windows, not a token balance. Choose **Refresh limits** to request data. Open accounts keep their saved snapshots. An exhausted snapshot offers refresh, another account, or an explicit launch anyway.
 
 ## Commands
 
-`accounts` shows managed profiles when any exist, otherwise legacy accounts. In legacy mode, `switch` changes the shared active account.
+Commands remain available for scripts. `accounts` shows both added and original accounts. `profiles` and the versioned JSON contract describe added accounts only. In legacy mode, `switch` changes the shared active account.
 
 | I want to… | Run |
 | :--- | :--- |
@@ -43,20 +59,20 @@ Pass arguments to Codex with `codex-switch -- <arguments>`. The old `codex-vpn` 
 CODEX_SWITCH_LANG=ru codex-switch
 ```
 
-Для добавления аккаунта используй `codex-switch login`, для настройки подключения — `codex-switch setup`.
+Язык также можно выбрать в **Settings → Language / Язык**. Приложение сохранит выбор. Переменная `CODEX_SWITCH_LANG` имеет приоритет при следующем запуске.
 
 [Полная инструкция на русском →](README.ru.md)
 
 
 ## Optional VLESS connection
 
-Run `codex-switch setup`, choose **VLESS**, and paste your provider's link. Xray starts when you launch Codex.
+Run `codex-switch setup`, choose **Paste a VLESS link**, and paste your provider's link. Input is hidden in interactive terminals. The app validates the link, starts Xray, and tests connectivity. Normal connectivity requires no setup wizard.
 
 | Security | Transports |
 | :--- | :--- |
 | TLS · REALITY | TCP · WebSocket · gRPC · XHTTP · HTTPUpgrade |
 
-Transport and security combinations must be compatible. The setup validates the link with Xray before saving it. Finish sessions using the current proxy and run `codex-switch stop` before changing VLESS servers.
+Transport and security combinations must be compatible. If the server fails the check, the app restores the previous connection preference and keeps the link for another attempt. Changing an already running proxy requires confirmation because sessions using it will reconnect. Switching to normal connectivity affects new launches and leaves the old proxy running for existing sessions.
 
 ## Configuration, credentials, and compatibility
 

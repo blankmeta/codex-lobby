@@ -1,5 +1,18 @@
 # Changelog
 
+## 1.3.0
+
+- One terminal menu for ChatGPT accounts, remaining limits, session continuation, and settings. Arrow keys and Enter; numbered choices on non-interactive terminals.
+- Add an account without inventing a profile ID. Email names by default, editable labels with spaces and Unicode, and a saved language preference.
+- Keep original accounts and their history visible alongside added accounts.
+- Show quota freshness and reset countdowns. Unknown or expired snapshots never imply fresh allowance. Exhausted accounts offer refresh or another selection.
+- Repair sign-in and choose project defaults inside the menu. Busy accounts and missing project preferences return to a choice without changing identity.
+- Paste a VLESS link with hidden input, validate and test the connection, and restore the previous preference if the check fails. Confirm changes to a running proxy.
+- Add explicit account removal with confirmation, including its local history. Active accounts cannot be removed or renamed.
+- Preserve CLI commands, JSON schema version 1, per-account isolation, and concurrent use of different accounts.
+
+One running Codex process per added account remains the supported limit. Browser OAuth is still handled by Codex; automated login tests use synthetic credentials.
+
 ## 1.2.0
 
 - Add isolated ChatGPT account profiles with `login <name>` and `run <name>`.

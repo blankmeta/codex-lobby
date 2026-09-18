@@ -4,6 +4,10 @@
 
 ## Add your accounts
 
+In `codex-switch`, choose **Add ChatGPT account**. Sign in in your browser; the app uses your email as the name. Rename it later in **Settings → Manage accounts**. Each added account gets separate sign-in, configuration, history and local state.
+
+For scripts, explicit profile IDs remain available:
+
 ```sh
 codex-switch login personal
 codex-switch login work
@@ -11,7 +15,7 @@ codex-switch login work
 
 Complete the normal ChatGPT sign-in for each account. Each profile gets its own Codex home, authentication, and session history. If you need VLESS for sign-in, run `codex-switch setup` first.
 
-Use lowercase profile names such as `personal`, `work`, or `client-2`.
+Explicit CLI IDs use lowercase names such as `personal`, `work`, or `client-2`. Display names in the menu can contain spaces and Unicode; renaming a display name does not change its ID, history, or project preferences.
 
 ## Remember an account for a project
 
@@ -22,7 +26,7 @@ codex-switch bind work
 codex-switch
 ```
 
-The picker highlights `work`. Press Enter to launch it, or choose another profile for this launch. With just one profile, Codex starts without an extra choice. `bind` saves a local preference; it does not place files or credentials in your repository.
+The same action is available in **Settings → Account for this project**. The picker highlights that account. Press Enter to launch it, or choose another for this launch. A single account still shows the menu. After the first successfully completed session in a project with no preference, the app remembers its added account. `bind` saves a local preference; it does not place files or credentials in your repository.
 
 Git subdirectories share the nearest Git root's preference; worktrees have their own preference. Outside Git, the preference applies to the current directory. `codex-switch unbind` removes it without deleting profiles or history.
 
@@ -52,7 +56,7 @@ No live account handoff, history merging, or automatic rotation is performed. Pr
 
 ## Existing codex-auth accounts and history
 
-Before you create a profile, the usual `codex-switch` picker still shows your existing accounts. After you create one, it uses the profile picker. Your original accounts, config, and history remain available:
+The main menu shows added accounts and original codex-auth accounts together. Original entries are marked **original** and keep their existing configuration and shared history. If the same ChatGPT account has both an original entry and an added profile, both stay visible because their histories differ. The explicit original commands remain available:
 
 ```sh
 codex-switch legacy
@@ -61,7 +65,7 @@ codex-switch legacy accounts
 codex-switch legacy login
 ```
 
-To start using an existing account as an isolated profile, run `codex-switch login work` and sign in to it once. The new profile starts with separate history and default Codex configuration. Global MCP settings, skills, and other user configuration are not copied. Repository-level configuration follows Codex's normal rules.
+To give an original account separate history and sign-in, choose **Settings → Manage accounts → original account → Set up separate sign-in and history**, or run `codex-switch login work`. Sign in once more. The new profile starts with separate history and default Codex configuration. Global MCP settings, skills, and other user configuration are not copied. Repository-level configuration follows Codex's normal rules.
 
 We do not copy old refresh tokens into parallel homes. The same account cannot be registered under two managed profile names. Sign in again with `codex-switch login work` to repair that profile; a different account is rejected and its existing local profile is kept. Provider-side revocations can still require a new login.
 
@@ -81,4 +85,4 @@ Identity/storage overrides and Codex named config profiles are rejected in manag
 codex-switch run work -- -c 'model_reasoning_effort="high"'
 ```
 
-The optional VLESS connection is shared by the launcher. Finish sessions using it before changing or stopping that connection; account isolation does not create a separate proxy per profile.
+The optional VLESS connection is shared by the launcher. The menu warns before changing or stopping a live proxy; account isolation does not create a separate proxy per profile.

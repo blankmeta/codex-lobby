@@ -43,6 +43,7 @@ class Preferences:
     configured: bool = False
     proxy_enabled: bool = False
     selected_server: str | None = None
+    language: str | None = None
 
 
 @dataclass(frozen=True)

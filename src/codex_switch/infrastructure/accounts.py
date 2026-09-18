@@ -33,7 +33,7 @@ class CodexAuth:
     def _json(self, args: list[str], proxy: str | None) -> dict:
         try:
             result = self.runner([self.command(), *args, "--json"], stdin=subprocess.DEVNULL, capture_output=True,
-                                 text=True, timeout=90, env=self.environment(proxy))
+                                 text=True, timeout=20, env=self.environment(proxy))
         except subprocess.TimeoutExpired:
             raise SwitchError("Обновление аккаунтов не ответило. Повтори позже; сохранённые аккаунты доступны.") from None
         try:

@@ -80,6 +80,8 @@ class JsonSettings:
             settings = Preferences(**data)
             if type(settings.configured) is not bool or type(settings.proxy_enabled) is not bool:
                 raise ValueError()
+            if settings.language not in (None, "en", "ru"):
+                raise ValueError()
             return settings
         except (TypeError, ValueError):
             raise SwitchError("Формат settings.json повреждён. Исходный файл сохранён.") from None

@@ -1,3 +1,7 @@
+from concurrent.futures import ThreadPoolExecutor
+from dataclasses import replace
+from uuid import uuid4
+
 from codex_switch.application.ports import Accounts, Codex, Diagnostics, Proxy, Servers, Settings, Profiles, Projects
 from codex_switch.domain.profiles import profile_name, validate_profile_arguments
 from codex_switch.domain.errors import SwitchError
@@ -13,19 +17,20 @@ class SwitchApplication:
         self.profiles, self.projects = profiles, projects
 
     def use_direct_connection(self) -> None:
-        self.settings.save(Preferences(configured=True))
+        self.settings.save(replace(self.settings.load(), configured=True, proxy_enabled=False, selected_server=None))
 
-    def add_server(self, uri: str) -> Server:
+    def add_server(self, uri: str, *, select: bool = True) -> Server:
         server = parse_vless(uri)
         self.proxy.validate(server)
+        previous = self.settings.load()
         self.servers.save(server)
-        self.settings.save(Preferences(configured=True, proxy_enabled=True, selected_server=server.id))
+        self.settings.save(replace(previous, configured=True, proxy_enabled=True, selected_server=server.id) if select else previous)
         return server
 
     def choose_server(self, server_id: str) -> None:
         if not any(server.id == server_id for server in self.servers.list()):
             raise SwitchError("Сервер не найден. Добавь VLESS-ссылку заново.")
-        self.settings.save(Preferences(configured=True, proxy_enabled=True, selected_server=server_id))
+        self.settings.save(replace(self.settings.load(), configured=True, proxy_enabled=True, selected_server=server_id))
 
     def connection(self) -> str | None:
         preferences = self.settings.load()
@@ -58,11 +63,25 @@ class SwitchApplication:
 
     def profile_status(self, *, refresh: bool = False):
         proxy = self.connection() if refresh else None
-        return [self.profiles.inspect(name, refresh=refresh, proxy=proxy) for name in self.profiles.names()]
+        names = self.profiles.names()
+        with ThreadPoolExecutor(max_workers=4) as workers:
+            return list(workers.map(lambda name: self.profiles.inspect(name, refresh=refresh, proxy=proxy), names))
 
-    def login_profile(self, name: str):
+    def login_profile(self, name: str | None = None):
+        name = name or "account-" + uuid4().hex[:12]
         profile_name(name)
         return self.profiles.login(name, proxy=self.connection())
+
+    def remove_profile(self, name: str) -> None:
+        bound = self.projects.bound()
+        self.profiles.remove(name)
+        if bound == name:
+            self.projects.unbind()
+
+    def set_language(self, language: str) -> None:
+        if language not in ("en", "ru"):
+            raise SwitchError("Choose English or Russian.")
+        self.settings.save(replace(self.settings.load(), language=language))
 
     def bind_profile(self, name: str) -> None:
         profile_name(name)

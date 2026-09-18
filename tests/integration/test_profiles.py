@@ -176,6 +176,38 @@ raise SystemExit(LocalProfiles(Path(sys.argv[1]),auth_factory=LocalAuth,codex_bi
         self.assertEqual(adapter.inspect("work").account.key, "work")
         self.assertEqual((home / "history.jsonl").read_text(), "keep")
 
+    def test_human_name_survives_inspection_and_reauthentication(self):
+        home = seed(self.root, "work")
+        (home / "history.jsonl").write_text("keep")
+        adapter = LocalProfiles(self.root, self.login_runner("work"), LocalAuth, "/fake/codex")
+        adapter.rename("work", "Рабочий аккаунт")
+        self.assertEqual(adapter.inspect("work").title, "Рабочий аккаунт")
+        adapter.login("work")
+        self.assertEqual(adapter.inspect("work").title, "Рабочий аккаунт")
+        self.assertEqual((home / "history.jsonl").read_text(), "keep")
+        self.assertEqual(adapter.names(), ["work"])
+
+    def test_remove_only_deletes_selected_idle_account(self):
+        seed(self.root, "work")
+        personal = seed(self.root, "personal")
+        adapter = LocalProfiles(self.root, auth_factory=LocalAuth)
+        with profile_lock(self.root / "profiles/.work.lock"):
+            with self.assertRaises(ProfileBusy): adapter.remove("work")
+        adapter.remove("work")
+        self.assertEqual(adapter.names(), ["personal"])
+        self.assertTrue((personal / "auth.json").exists())
+
+    def test_saving_unselected_vless_does_not_implicitly_enable_it_on_clean_install(self):
+        from codex_switch.infrastructure.storage import JsonSettings, JsonServers
+        from tests.unit.fakes import application
+        from tests.unit.test_domain import LINK
+        app, _ = application()
+        app.servers = JsonServers(self.root / "app")
+        app.settings = JsonSettings(self.root / "app", app.servers)
+        previous = app.settings.load()
+        app.add_server(LINK, select=False)
+        self.assertEqual(app.settings.load(), previous)
+
     @unittest.skipUnless(os.environ.get("CODEX_SWITCH_TEST_CODEX_BINARY"), "Set CODEX_SWITCH_TEST_CODEX_BINARY for native child lock test")
     def test_native_codex_app_server_inherits_profile_lock(self):
         import signal

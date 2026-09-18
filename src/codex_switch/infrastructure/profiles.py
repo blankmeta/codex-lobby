@@ -9,11 +9,12 @@ import fcntl
 import os
 from pathlib import Path
 import subprocess
+import shutil
 import tempfile
 
-from codex_switch.domain.errors import SwitchError
+from codex_switch.domain.errors import SwitchError, AccountAlreadyAdded
 from codex_switch.domain.models import Account, UsageWindow
-from codex_switch.domain.profiles import ProfileStatus, profile_name, validate_profile_arguments
+from codex_switch.domain.profiles import ProfileStatus, profile_name, account_label, validate_profile_arguments
 from .accounts import CodexAuth
 from .processes import profile_environment, require_binary
 from .storage import atomic_json, read_json
@@ -76,7 +77,35 @@ class LocalProfiles:
         return cached_account(data.get("account"))
 
     def _save(self, home: Path, account: Account) -> None:
-        atomic_json(home / "profile.json", {"schema_version": 1, "account": asdict(account)})
+        try:
+            existing = read_json(home / "profile.json", {})
+        except SwitchError:
+            existing = {}
+        label = existing.get("label") if isinstance(existing, dict) else None
+        atomic_json(home / "profile.json", {"schema_version": 1, "account": asdict(account), "label": label})
+
+    def _label(self, name: str) -> str | None:
+        try:
+            data = read_json(self.home(name) / "profile.json", {})
+            return data.get("label") if isinstance(data, dict) and isinstance(data.get("label"), str) else None
+        except SwitchError:
+            return None
+
+    def rename(self, name: str, label: str) -> None:
+        label = account_label(label)
+        home = self.home(name)
+        with profile_lock(self.directory / f".{name}.lock"):
+            self._saved(name)
+            data = read_json(home / "profile.json", {})
+            data["label"] = label
+            atomic_json(home / "profile.json", data)
+
+    def remove(self, name: str) -> None:
+        home = self.home(name)
+        with profile_lock(self.directory / f".{name}.lock"), profile_lock(self.directory / ".login.lock"):
+            if not (home / "profile.json").exists():
+                raise SwitchError("Account no longer exists.")
+            shutil.rmtree(home)
 
     def _current(self, home: Path, *, refresh=False, proxy=None) -> Account:
         if not (home / "auth.json").is_file():
@@ -93,7 +122,7 @@ class LocalProfiles:
         if saved.key != current.key:
             raise SwitchError("Profile identity changed outside Codex Switch. Sign in to the original account again.")
         self._save(self.home(name), current)
-        return ProfileStatus(name, current)
+        return ProfileStatus(name, current, label=self._label(name))
 
     def inspect(self, name: str, *, refresh=False, proxy=None) -> ProfileStatus:
         saved = None
@@ -102,9 +131,9 @@ class LocalProfiles:
             with profile_lock(self.directory / f".{name}.lock"):
                 return self._inspect(name, refresh=refresh, proxy=proxy)
         except ProfileBusy:
-            return ProfileStatus(name, saved, running=True)
+            return ProfileStatus(name, saved, running=True, label=self._label(name))
         except SwitchError as exc:
-            return ProfileStatus(name, saved, problem=str(exc))
+            return ProfileStatus(name, saved, problem=str(exc), label=self._label(name))
 
     def login(self, name: str, *, proxy=None) -> ProfileStatus:
         home = self.home(name)
@@ -131,7 +160,7 @@ class LocalProfiles:
                     raise SwitchError("You signed in to a different account. The existing profile was kept; use a new profile name.")
                 for other in self.names():
                     if other != name and self._saved(other).key == account.key:
-                        raise SwitchError(f"This account already belongs to '{other}'. Use that profile.")
+                        raise AccountAlreadyAdded(other)
                 if home.exists() and not previous:
                     raise SwitchError("An unfinished profile directory exists. Keep it for recovery and choose another name.")
                 (staged / "auth.json").chmod(0o600)
@@ -142,7 +171,7 @@ class LocalProfiles:
                     self._save(home, account)
                 else:
                     os.rename(staged, home)
-                return ProfileStatus(name, account)
+                return ProfileStatus(name, account, label=self._label(name))
 
     def run(self, name: str, args: list[str], *, proxy=None) -> int:
         validate_profile_arguments(args)

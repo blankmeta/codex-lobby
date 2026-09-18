@@ -18,6 +18,18 @@ class ProfileStatus:
     account: Account | None = None
     running: bool = False
     problem: str | None = None
+    label: str | None = None
+
+    @property
+    def title(self) -> str:
+        return self.label or (self.account.email if self.account else None) or self.name
+
+
+def account_label(value: str) -> str:
+    value = value.strip()
+    if not value or len(value) > 60 or any(ord(c) < 32 or ord(c) == 127 for c in value):
+        raise SwitchError("Use a name of 1–60 characters, on one line.")
+    return value
 
 
 def validate_profile_arguments(args: list[str]) -> None:

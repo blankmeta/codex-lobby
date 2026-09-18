@@ -37,7 +37,7 @@ sys.exit(7)
             env = {**os.environ, "PATH": str(binaries) + os.pathsep + os.environ["PATH"], "PYTHONPATH": str(root / "src"),
                    "CODEX_SWITCH_HOME": str(directory / "app"), "CODEX_SWITCH_LANG": "en"}
             result = subprocess.run([sys.executable, "-m", "codex_switch", "--", "exec", "an argument with spaces"],
-                                    input="1\n2\n", capture_output=True, text=True, env=env, timeout=10)
+                                    input="2\n", capture_output=True, text=True, env=env, timeout=10)
             self.assertEqual(result.returncode, 7, result.stdout + result.stderr)
             self.assertEqual((directory / "selected").read_text(), "work")
             self.assertEqual(json.loads((directory / "args.json").read_text()), ["exec", "an argument with spaces"])
@@ -81,13 +81,16 @@ else:
                                       capture_output=True, text=True, env=env, cwd=directory, timeout=10)
             launched = run("--", "exec", "argument with spaces", input="1\n")
             self.assertEqual(launched.returncode, 7, launched.stdout + launched.stderr)
-            home = directory / "app/profiles/personal"
+            homes = list((directory / "app/profiles").glob("account-*"))
+            self.assertEqual(len(homes), 1)
+            home = homes[0]
+            self.assertNotIn("Profile name", launched.stdout)
             self.assertEqual(json.loads((home / "last-args.json").read_text())[-2:], ["exec", "argument with spaces"])
-            self.assertEqual(run("bind", "personal").returncode, 0)
+            self.assertEqual(run("bind", home.name).returncode, 0)
             status = run("status", "--json")
             self.assertEqual(status.returncode, 0, status.stderr)
             data = json.loads(status.stdout)
-            self.assertEqual(data["project"]["profile"], "personal")
+            self.assertEqual(data["project"]["profile"], home.name)
             self.assertEqual(data["profiles"][0]["state"], "ready")
             self.assertEqual((original / "auth.json").read_text(), '{"untouched":true}')
             self.assertEqual(run("legacy", "accounts").returncode, 0)

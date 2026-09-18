@@ -16,11 +16,11 @@ flowchart TD
 | `domain` | Immutable account/server models, quota math, VLESS parsing | None |
 | `application` | Connection setup, account selection, ordered launch | Only through injected protocols |
 | `infrastructure` | Atomic private files, codex-auth JSON, Xray processes, Codex process | Filesystem and subprocesses |
-| `presentation` | Numbered choices, EN/RU text, commands | Terminal input/output |
+| `presentation` | Menu state, pure frame renderer, arrow/number input, EN/RU text, commands | Terminal input/output |
 
 The legacy launch use case resolves the connection, confirms the global account switch, then starts Codex. Managed launches validate the profile and arguments, resolve connectivity, and delegate to the profile runtime. They never call the global account switcher. Cached status does not start a proxy or request API data.
 
-Xray listens on loopback. Switching to normal connectivity changes future launches without killing existing proxy sessions. Choosing a different VLESS server while another is running requires `codex-switch stop`; the application never silently replaces a proxy used by another session. Process shutdown verifies both the executable and the configuration path before sending a signal.
+Xray listens on loopback. Switching to normal connectivity changes future launches without killing existing proxy sessions. The connection menu asks before replacing a live server, tests the new connection, and restores the previous preference after a failed check. Process shutdown verifies both the executable and the configuration path before sending a signal.
 
 Settings writes use mode `0600`, a temporary file, `fsync`, and atomic replacement. Server updates and Xray lifecycle changes use file locks. Legacy VLESS files are read without overwriting them. Codex performs OAuth in a fresh staged home. Managed login validates account metadata through codex-auth, then publishes the new home or atomically replaces the authenticated file on re-login. Tokens are not decoded by this project or emitted in status. Legacy accounts remain managed by codex-auth.
 
@@ -39,6 +39,8 @@ Status uses a saved metadata snapshot when a profile is locked. A malformed prof
 The pyramid consists of fast unit tests for domain rules and use cases, adapter contract tests with controlled subprocess results, filesystem and real dependency integration tests, and complete CLI scenarios with substitute external binaries. Managed-profile tests cover two simultaneous subprocesses, wrapper termination with a surviving child, cancelled/wrong-account sign-in, duplicate identities, private storage, and project bindings.
 
 The architecture test rejects outward imports from the domain and application layers and infrastructure imports from the presentation layer.
+
+UX tests cover project defaults, original-account visibility, duplicate sign-in, inline recovery, exhausted limits, connection rollback, naming and removal confirmation. Pseudo-terminal tests send actual arrow/Enter/Escape sequences through the CLI, launch a child against temporary account homes, and verify terminal mode restoration. The README preview uses the same frame renderer as the interactive menu.
 
 ```sh
 PYTHONPATH=src python3 -m unittest discover -s tests -t . -v

@@ -10,7 +10,7 @@
 </p>
 
 <p align="center">
-  Your ChatGPT accounts, usage limits, and project profiles for Codex.
+  Your ChatGPT accounts, remaining limits, and Codex sessions in one terminal menu.
 </p>
 
 <p align="center">
@@ -26,30 +26,32 @@ brew install blankmeta/tap/codex-switch
 codex-switch
 ```
 
-Follow the setup prompts and sign in. Add a work profile with `codex-switch login work`, then run `codex-switch bind work` in your project. Press **Enter** to use its saved profile.
+Choose **Add ChatGPT account** and sign in in your browser. Codex starts when you return. No account names or configuration files to fill in.
 
-Different profiles can run at the same time with separate sign-in and history. [Profiles and migration →](docs/profiles.md)
+Next time, choose an account with **↑↓** and press **Enter**. Add another account, check limits, or open settings from the same menu.
 
 <p align="center">
-  <img src="docs/assets/profiles-fa292834.svg" alt="Profile picker: personal is running; work is the project default with 92% of its five-hour allowance remaining. Press Enter to launch work." width="100%">
+  <img src="docs/assets/accounts-5e3985cc.svg" alt="Account menu: Work is selected for this project with 92% of its five-hour limit left. Personal is open in another terminal. Add accounts, continue work, refresh limits and settings are available below." width="100%">
   <br><sub>CLI preview with synthetic accounts.</sub>
 </p>
 
-## Commands
+## Your accounts, ready to work
 
-| Run | To… |
+| What you need | Where to find it |
 | :--- | :--- |
-| `codex-switch` | Choose an account and start Codex |
-| `codex-switch login work` | Add an isolated ChatGPT account |
-| `codex-switch profiles --refresh` | Check current usage limits |
-| `codex-switch bind work` | Remember this project’s profile |
-| `codex-switch setup` | Change the connection |
+| **Work and personal side by side** | Separate sign-in and history for each added account |
+| **The right account for a project** | Settings → Account for this project; then Enter to launch |
+| **See what remains** | Five-hour and weekly limits, reset times, and data age |
+| **Pick up your work** | Continue a saved session |
+| **Connect with VLESS** | Settings → Connection → paste your link |
 
-Usage figures are cached snapshots. One Codex process runs per profile; other profiles can run alongside it. Original accounts and history remain available through `codex-switch legacy`.
+Different accounts run concurrently; one Codex process runs per added account. Original accounts stay in the same list with their original history. [Accounts & migration →](docs/profiles.md)
 
-[All commands](docs/usage.md) · [JSON & terminal integrations](docs/integrations.md) · [Changelog](CHANGELOG.md)
+Limits show saved data with its age. Choose **Refresh limits** to update idle accounts. Accounts never rotate automatically.
 
-**Need a proxy?** Run `codex-switch setup` and paste a VLESS link. The proxy applies to launched processes. See [connection settings and all commands](docs/usage.md).
+**Need a proxy before sign-in?** Choose connection setup on the first screen, or run `codex-switch setup`. Paste a VLESS link; the app checks it and connects. Proxy use is optional.
+
+[Menu & commands](docs/usage.md) · [JSON & terminal integrations](docs/integrations.md) · [Changelog](CHANGELOG.md)
 
 ---
 
