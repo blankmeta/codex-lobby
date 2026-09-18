@@ -1,0 +1,12 @@
+.DS_Store
+__pycache__/
+*.py[cod]
+*.log
+.env
+auth.json
+*.auth.json
+accounts/
+config.json
+servers.json
+subscription_url.txt
+xray.pid
