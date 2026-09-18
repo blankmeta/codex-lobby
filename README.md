@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/assets/hero.svg" alt="Codex Switch — choose your ChatGPT account and see your usage limits before launching Codex" width="100%">
+  <img src="docs/assets/hero.svg" alt="Codex Switch: ChatGPT account switching for Codex" width="100%">
 </p>
 
 <p align="center">
