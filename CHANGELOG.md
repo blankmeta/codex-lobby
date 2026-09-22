@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.0.1
+
+- Verify Windows installer checksum downloads from a file, independent of the HTTP content type, and test installation with Windows PowerShell 5.1.
+
 ## 2.0.0
 
 - Rename to Codex Lobby, with `cxl` as the short command. Preserve `codex-switch`, `codex-vpn`, existing profiles and project preferences.

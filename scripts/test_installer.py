@@ -14,7 +14,7 @@ with tempfile.TemporaryDirectory() as folder:
 $ErrorActionPreference = 'Stop'
 $SavedPath = [Environment]::GetEnvironmentVariable('Path', 'User')
 function Invoke-WebRequest {
-    param([string]$Uri, [string]$OutFile)
+    param([string]$Uri, [string]$OutFile, [switch]$UseBasicParsing)
     $File = Join-Path $env:LOBBY_TEST_DIST ([IO.Path]::GetFileName($Uri))
     if ($OutFile) { Copy-Item $File $OutFile } else { @{ Content = (Get-Content $File -Raw) } }
 }
@@ -26,7 +26,7 @@ try {
     [Environment]::SetEnvironmentVariable('Path', $SavedPath, 'User')
 }
 ''', encoding="utf-8")
-        subprocess.run(["pwsh", "-NoProfile", "-File", str(script)], check=True,
+        subprocess.run(["powershell", "-NoProfile", "-File", str(script)], check=True,
                        env={**os.environ, "LOCALAPPDATA": str(root / "local"), "LOBBY_TEST_DIST": str(repo / "dist"), "LOBBY_TEST_REPO": str(repo)})
     else:
         shim = root / "shim"
