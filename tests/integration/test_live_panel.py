@@ -16,8 +16,9 @@ def receive(process, needle, timeout=12):
             boundary=data.index(needle)+len(needle)
             process._test_unread=data[boundary:]
             return data[:boundary]
-        if process.poll() is not None: break
-        data+=process.read(.05)
+        chunk=process.read(.05)
+        data+=chunk
+        if not chunk and process.poll() is not None: break
     raise AssertionError(f'Expected marker {needle!r}; got {data[-1500:]!r}')
 
 
