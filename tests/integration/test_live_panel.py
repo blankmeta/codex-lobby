@@ -10,11 +10,14 @@ from codex_switch.infrastructure.platforms.pty_process import spawn_terminal
 
 
 def receive(process, needle, timeout=12):
-    data=b''; end=time.monotonic()+timeout
+    data=getattr(process,'_test_unread',b''); end=time.monotonic()+timeout
     while time.monotonic()<end:
-        data+=process.read(.05)
-        if needle in data: return data
+        if needle in data:
+            boundary=data.index(needle)+len(needle)
+            process._test_unread=data[boundary:]
+            return data[:boundary]
         if process.poll() is not None: break
+        data+=process.read(.05)
     raise AssertionError(f'Expected marker {needle!r}; got {data[-1500:]!r}')
 
 
