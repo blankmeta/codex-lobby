@@ -26,8 +26,12 @@ try {
     [Environment]::SetEnvironmentVariable('Path', $SavedPath, 'User')
 }
 ''', encoding="utf-8")
-        subprocess.run(["powershell", "-NoProfile", "-File", str(script)], check=True,
-                       env={**os.environ, "LOCALAPPDATA": str(root / "local"), "LOBBY_TEST_DIST": str(repo / "dist"), "LOBBY_TEST_REPO": str(repo)})
+        # A 5.1 child of pwsh must build its own module path; inheriting the
+        # PowerShell 7 module directory hides built-in 5.1 archive/hash commands.
+        env = {k: v for k, v in os.environ.items() if k.upper() != "PSMODULEPATH"}
+        env.update({"LOCALAPPDATA": str(root / "local"), "LOBBY_TEST_DIST": str(repo / "dist"), "LOBBY_TEST_REPO": str(repo)})
+        for shell in ("powershell", "pwsh"):
+            subprocess.run([shell, "-NoProfile", "-File", str(script)], check=True, env=env)
     else:
         shim = root / "shim"
         shim.mkdir()
