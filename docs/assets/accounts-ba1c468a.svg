@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="632" viewBox="0 0 1280 632" role="img" aria-labelledby="title desc">
+<title id="title">Codex Lobby account menu</title>
+<desc id="desc">Work is selected for this project, with 92% of its five-hour limit and 84% of its weekly limit left. Personal uses Claude. Add accounts, resume work, refresh limits and settings are in the same menu. Synthetic accounts.</desc>
+<rect width="1280" height="632" rx="8" fill="#181b19"/>
+<text x="38" y="34" fill="#7f8b82" font-family="Helvetica,Arial,sans-serif" font-size="14">$ cxl</text>
+<path d="M0 50H1280" stroke="#30372f"/>
+<text x="38" y="86" fill="#e4e9e1" font-family="SFMono-Regular,Consolas,monospace" font-size="16" xml:space="preserve">Codex Lobby</text>
+<text x="38" y="114" fill="#e4e9e1" font-family="SFMono-Regular,Consolas,monospace" font-size="16" xml:space="preserve">Project: payments-api</text>
+<text x="38" y="142" fill="#e4e9e1" font-family="SFMono-Regular,Consolas,monospace" font-size="16" xml:space="preserve">Connection: normal</text>
+<text x="38" y="170" fill="#e4e9e1" font-family="SFMono-Regular,Consolas,monospace" font-size="16" xml:space="preserve">  Account                  App       5h    Week</text>
+<text x="38" y="198" fill="#e4e9e1" font-family="SFMono-Regular,Consolas,monospace" font-size="16" xml:space="preserve"></text>
+<text x="38" y="226" fill="#e4e9e1" font-family="SFMono-Regular,Consolas,monospace" font-size="16" xml:space="preserve">  Personal                 Claude   76%     62%</text>
+<text x="38" y="254" fill="#aec89f" font-family="SFMono-Regular,Consolas,monospace" font-size="16" xml:space="preserve">› Work                     Codex    92%     84% · this project</text>
+<text x="38" y="282" fill="#e4e9e1" font-family="SFMono-Regular,Consolas,monospace" font-size="16" xml:space="preserve">  + Add account</text>
+<text x="38" y="310" fill="#e4e9e1" font-family="SFMono-Regular,Consolas,monospace" font-size="16" xml:space="preserve">  Continue a saved session</text>
+<text x="38" y="338" fill="#e4e9e1" font-family="SFMono-Regular,Consolas,monospace" font-size="16" xml:space="preserve">  Refresh limits</text>
+<text x="38" y="366" fill="#e4e9e1" font-family="SFMono-Regular,Consolas,monospace" font-size="16" xml:space="preserve">  Settings</text>
+<text x="38" y="394" fill="#e4e9e1" font-family="SFMono-Regular,Consolas,monospace" font-size="16" xml:space="preserve">  Exit</text>
+<text x="38" y="422" fill="#e4e9e1" font-family="SFMono-Regular,Consolas,monospace" font-size="16" xml:space="preserve"></text>
+<text x="38" y="450" fill="#e4e9e1" font-family="SFMono-Regular,Consolas,monospace" font-size="16" xml:space="preserve">Codex · alex@company.example · business · Separate sign-in and history</text>
+<text x="38" y="478" fill="#9aa69d" font-family="SFMono-Regular,Consolas,monospace" font-size="16" xml:space="preserve">Updated 2m ago</text>
+<text x="38" y="506" fill="#9aa69d" font-family="SFMono-Regular,Consolas,monospace" font-size="16" xml:space="preserve">Resets in · 5h: 1h 30m · Week: 2d 0h</text>
+<text x="38" y="534" fill="#aec89f" font-family="SFMono-Regular,Consolas,monospace" font-size="16" xml:space="preserve">Enter: launch Codex</text>
+<text x="38" y="562" fill="#e4e9e1" font-family="SFMono-Regular,Consolas,monospace" font-size="16" xml:space="preserve"></text>
+<text x="38" y="590" fill="#e4e9e1" font-family="SFMono-Regular,Consolas,monospace" font-size="16" xml:space="preserve">↑↓ Choose · Enter Launch · → Account · Esc Back</text>
+</svg>

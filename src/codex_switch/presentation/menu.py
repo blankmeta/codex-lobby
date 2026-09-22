@@ -37,6 +37,14 @@ def frame(title, options, selected, context=(), *, width=90, height=30, ru=False
     footer = "↑↓ Выбрать · Enter Открыть · Esc Назад" if ru else "↑↓ Choose · Enter Open · Esc Back"
     if options[selected].account_actions:
         footer = "↑↓ Выбрать · Enter Запуск · → Аккаунт · Esc Назад" if ru else "↑↓ Choose · Enter Launch · → Account · Esc Back"
+    if height < 12:
+        # Keep arrow navigation in short split panes instead of asking for numbers.
+        head = [title] if height >= 4 else []
+        available = max(1, height - len(head) - 2)
+        start = max(0, min(selected - available // 2, len(options) - available))
+        lines = head + [("› " if start + i == selected else "  ") + item.label
+                        for i, item in enumerate(options[start:start + available])] + [footer]
+        return [clipped(line, max(1, width - 2)) for line in lines]
     head = [title, *context, ""]
     available = max(1, height - len(head) - min(len(details), 4) - 5)
     start = max(0, min(selected - available // 2, len(options) - available))
@@ -56,7 +64,7 @@ class TerminalMenu:
     @property
     def interactive(self):
         return (self.terminal is not None and self.c.read is input and self.c.write is print and sys.stdin.isatty() and sys.stdout.isatty()
-                and os.environ.get("TERM", "") != "dumb" and shutil.get_terminal_size().lines >= 12)
+                and os.environ.get("TERM", "") != "dumb")
 
     def choose(self, title, options, default=None, context=()):
         if not options:

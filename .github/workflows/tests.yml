@@ -40,6 +40,7 @@ jobs:
           python-version: '3.13'
       - run: python -m pip install . pyinstaller==6.19.0
       - run: python scripts/build_bundle.py
+      - run: python scripts/test_installer.py
       - uses: actions/upload-artifact@v4
         with:
           name: codex-lobby-${{ matrix.os }}

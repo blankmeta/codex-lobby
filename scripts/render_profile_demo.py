@@ -35,7 +35,7 @@ parts = [f'<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="{height}
          '<path d="M0 50H1280" stroke="#30372f"/>']
 for i, line in enumerate(lines):
     color = '#aec89f' if line.startswith('›') or 'Enter:' in line else '#9aa69d' if 'Updated' in line or 'Resets' in line else '#e4e9e1'
-    parts.append(f'<text x="38" y="{86+i*28}" fill="{color}" font-family="SFMono-Regular,Consolas,monospace" font-size="18" xml:space="preserve">{escape(line)}</text>')
+    parts.append(f'<text x="38" y="{86+i*28}" fill="{color}" font-family="SFMono-Regular,Consolas,monospace" font-size="16" xml:space="preserve">{escape(line)}</text>')
 parts.append('</svg>\n')
 svg = '\n'.join(parts)
 name = 'accounts-' + hashlib.sha256(svg.encode()).hexdigest()[:8] + '.svg'

@@ -44,7 +44,7 @@ Then run **`cxl`**. Choose **Add account → ChatGPT or Claude**, and sign in in
 Next time: choose an account with **↑↓**, press **Enter**. **→** opens account actions. [Installation details](docs/install.md)
 
 <p align="center">
-  <img src="docs/assets/accounts-d484af91.svg" alt="Account menu: Work is selected for this project with 92% of its five-hour limit left. Personal uses Claude. Add accounts, continue work, refresh limits and settings are available below." width="100%">
+  <img src="docs/assets/accounts-ba1c468a.svg" alt="Account menu: Work is selected for this project with 92% of its five-hour limit left. Personal uses Claude. Add accounts, continue work, refresh limits and settings are available below." width="100%">
   <br><sub>CLI preview with synthetic accounts.</sub>
 </p>
 

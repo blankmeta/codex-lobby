@@ -164,6 +164,13 @@ class ConnectionTests(unittest.TestCase):
 
 
 class MenuRenderingTests(unittest.TestCase):
+    def test_short_split_pane_keeps_selected_row_and_keyboard_hint(self):
+        options = [Option(str(i), "Account " + str(i)) for i in range(20)]
+        rendered = frame("Accounts", options, 19, width=70, height=5)
+        self.assertIn("› Account 19", rendered)
+        self.assertIn("Enter", rendered[-1])
+        self.assertLess(len(rendered), 5)
+
     def test_unknown_and_expired_windows_do_not_claim_fresh_quota(self):
         self.assertEqual(remaining(None), "—")
         self.assertEqual(remaining(UsageWindow(100, 300, 100), updated_at=90, now=110), "?")

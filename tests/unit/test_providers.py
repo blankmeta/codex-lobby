@@ -81,6 +81,13 @@ class MultiProviderMenuTests(unittest.TestCase):
         self.assertEqual(home.run(), 0)
         app.profiles.run.assert_called_once_with("work", ["--resume"], proxy=None)
 
+    def test_resume_command_translates_to_claude_without_forwarding_codex_subcommand(self):
+        home, app, _, _ = self.make_home("ENTER")
+        app.profiles.inspect.return_value = replace(self.work, provider="claude")
+        app.profiles.resume_arguments.return_value = ["--resume"]
+        self.assertEqual(home.run(resume=True), 0)
+        app.profiles.run.assert_called_once_with("work", ["--resume"], proxy=None)
+
     def test_add_account_offers_two_clear_choices_and_routes_claude_login(self):
         home, app, _, menu = self.make_home("add", "claude", None)
         app.profiles.login.return_value = replace(self.work, provider="claude")
