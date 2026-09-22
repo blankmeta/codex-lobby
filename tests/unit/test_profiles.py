@@ -118,4 +118,4 @@ class ProfilePresentationTests(unittest.TestCase):
         self.assertIn("snapshot", text)
         self.assertIn("running", text)
         self.assertNotIn("@", text)
-        self.assertEqual(status_line([ProfileStatus("work", account)], "missing"), "Codex: choose profile")
+        self.assertEqual(status_line([ProfileStatus("work", account)], "missing"), "RunLobby: choose account")

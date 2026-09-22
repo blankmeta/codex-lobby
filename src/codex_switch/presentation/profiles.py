@@ -29,7 +29,7 @@ def status_line(profiles, bound):
     if selected is None and bound is None and len(profiles) == 1:
         selected = profiles[0]
     if selected is None:
-        return "Codex: choose profile" if profiles else "Codex: no profiles"
+        return "RunLobby: choose account" if profiles else "RunLobby: no accounts"
     if selected.problem or not selected.account or selected.account.needs_login:
         return f"{selected.provider.capitalize()} {selected.name}: check login"
     account = selected.account
