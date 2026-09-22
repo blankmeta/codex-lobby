@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.5.1
+
+- Fix standalone builds recursively launching RunLobby when a configured tool is a Python script. Executable scripts use their shebang; other scripts require an external Python interpreter.
+- Exercise script overrides inside every packaged native build, in addition to source-level tests.
+
 ## 1.5.0
 
 - Show a live local activity panel beside Codex and Claude by default, using built-in PTY/ConPTY support across macOS, Linux and Windows. F8 toggles the panel; F9 selects the monitored session; F10 changes ranking.

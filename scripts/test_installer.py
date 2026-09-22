@@ -76,3 +76,18 @@ shutil.copy2(Path(os.environ['LOBBY_TEST_DIST'])/url.rsplit('/',1)[-1],destinati
         assert previous.read_text() == "keep for running sessions"
         assert (commands_dir / "cxl").resolve() != previous.resolve()
 print("Installer, rename and compatibility commands verified.")
+
+# A frozen launcher must not use itself as the interpreter for script overrides.
+# Exercise this in each native bundle, where sys.executable is the RunLobby binary.
+with tempfile.TemporaryDirectory() as folder:
+    fixture = Path(folder)
+    script = fixture / "auth.py"
+    script.write_text('import json\nprint(json.dumps({"schema_version":1,"accounts":[]}))\n', encoding="utf-8")
+    env = {**os.environ, "RUNLOBBY_CODEX_AUTH_BINARY": str(script),
+           "RUNLOBBY_HOME": str(fixture / "settings"), "CODEX_HOME": str(fixture / "codex"),
+           "RUNLOBBY_LANG": "en"}
+    # Use a non-executable script to exercise interpreter lookup on all OSes.
+    executable = repo / "dist/runlobby" / ("rlb.exe" if os.name == "nt" else "rlb")
+    result = subprocess.run([str(executable), "accounts"], env=env, capture_output=True, text=True, timeout=15)
+    assert result.returncode == 0 and "No accounts yet" in result.stdout, result.stderr
+print("Frozen script-tool execution verified.")

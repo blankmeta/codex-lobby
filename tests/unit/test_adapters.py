@@ -3,14 +3,21 @@ import copy
 import subprocess
 from types import SimpleNamespace
 import unittest
+from unittest.mock import patch
 
 from codex_switch.domain.errors import SwitchError
 from codex_switch.infrastructure.accounts import CodexAuth, decode_account
-from codex_switch.infrastructure.processes import connection_environment
+from codex_switch.infrastructure.processes import connection_environment, command_for
 from codex_switch.infrastructure.xray import equivalent_outbound
 
 
 class AdapterTests(unittest.TestCase):
+    def test_frozen_script_tools_never_relaunch_runlobby_as_python(self):
+        with patch('sys.frozen',True,create=True), patch('os.access',return_value=False), patch('shutil.which',return_value='/external/python'):
+            self.assertEqual(command_for('auth.py','list'),['/external/python','auth.py','list'])
+        with patch('sys.frozen',True,create=True), patch('os.access',return_value=False), patch('shutil.which',return_value=None):
+            with self.assertRaises(SwitchError):command_for('auth.py','list')
+
     def test_legacy_adoption_checks_transport_not_just_credentials(self):
         old = {"protocol": "vless", "settings": {"vnext": []}, "streamSettings": {"network": "tcp", "security": "reality", "realitySettings": {"publicKey": "key"}}}
         new = copy.deepcopy(old)

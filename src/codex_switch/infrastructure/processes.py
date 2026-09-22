@@ -48,7 +48,20 @@ def require_binary(name: str) -> str:
 
 
 def command_for(binary, *args):
-    return ([sys.executable, str(binary)] if str(binary).endswith(".py") else [str(binary)]) + list(args)
+    binary = str(binary)
+    if not binary.endswith(".py"):
+        return [binary, *args]
+    if not getattr(sys, "frozen", False):
+        return [sys.executable, binary, *args]
+    # In a standalone build sys.executable is RunLobby, not Python. Using it
+    # for a configured .py tool recursively launches another account picker.
+    if os.name != "nt" and os.access(binary, os.X_OK):
+        return [binary, *args]  # Respect the script's own shebang/interpreter.
+    for name in ("python3", "python"):
+        interpreter = shutil.which(name)
+        if interpreter and Path(interpreter).resolve() != Path(sys.executable).resolve():
+            return [interpreter, binary, *args]
+    raise SwitchError("This configured .py tool needs Python. Install Python or select a native executable.")
 
 
 class CodexProcess:
