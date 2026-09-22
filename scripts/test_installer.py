@@ -32,6 +32,8 @@ try {
         if ($LASTEXITCODE -ne 0 -or $Actual -ne $env:LOBBY_TEST_VERSION) { throw "Installed command failed: $Name" }
     }
     if ((& rlb --version) -ne $env:LOBBY_TEST_VERSION) { throw 'Short command is missing from PATH' }
+    $ProxyOutput = & (Join-Path $LobbyRoot 'codex-proxy.exe') --list
+    if ($LASTEXITCODE -ne 0 -or $ProxyOutput) { throw 'Legacy proxy command failed' }
     if (-not (Test-Path $OldMarker)) { throw 'Previous installation was removed' }
     if (([Environment]::GetEnvironmentVariable('Path', 'User') -split ';') -contains $OldRoot) { throw 'Old installation shadows the new commands' }
 } finally {
@@ -42,7 +44,7 @@ try {
         # PowerShell 7 module directory hides built-in 5.1 archive/hash commands.
         env = {k: v for k, v in os.environ.items() if k.upper() != "PSMODULEPATH"}
         env.update({"LOCALAPPDATA": str(root / "local"), "LOBBY_TEST_DIST": str(repo / "dist"), "LOBBY_TEST_REPO": str(repo),
-                    "LOBBY_TEST_VERSION": "runlobby " + __version__})
+                    "LOBBY_TEST_VERSION": "runlobby " + __version__, "RUNLOBBY_HOME": str(root / "settings")})
         for shell in ("powershell", "pwsh"):
             subprocess.run([shell, "-NoProfile", "-File", str(script)], check=True, env=env)
     else:
@@ -58,7 +60,8 @@ shutil.copy2(Path(os.environ['LOBBY_TEST_DIST'])/url.rsplit('/',1)[-1],destinati
 ''')
         curl.chmod(0o755)
         env = {**os.environ, "HOME": str(root / "user"), "XDG_DATA_HOME": str(root / "data"),
-               "PATH": str(shim) + os.pathsep + os.environ["PATH"], "LOBBY_TEST_DIST": str(repo / "dist"), "SHELL": "/bin/sh"}
+               "PATH": str(shim) + os.pathsep + os.environ["PATH"], "LOBBY_TEST_DIST": str(repo / "dist"), "SHELL": "/bin/sh",
+               "RUNLOBBY_HOME": str(root / "settings")}
         commands_dir = root / "user/.local/bin"
         commands_dir.mkdir(parents=True)
         previous = root / "previous-codex-lobby"
@@ -68,6 +71,8 @@ shutil.copy2(Path(os.environ['LOBBY_TEST_DIST'])/url.rsplit('/',1)[-1],destinati
         for name in commands:
             actual = subprocess.check_output([str(commands_dir / name), "--version"], env=env, text=True)
             assert actual.strip() == "runlobby " + __version__, (name, actual)
+        proxy_output = subprocess.check_output([str(commands_dir / "codex-proxy"), "--list"], env=env, text=True)
+        assert not proxy_output, proxy_output
         assert previous.read_text() == "keep for running sessions"
         assert (commands_dir / "cxl").resolve() != previous.resolve()
 print("Installer, rename and compatibility commands verified.")

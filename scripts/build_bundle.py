@@ -12,10 +12,11 @@ subprocess.run([sys.executable, "-m", "PyInstaller", "--noconfirm", "--clean", "
                 "--name", "runlobby", "--collect-all", "codex_switch", "scripts/frozen_entry.py"], check=True)
 bundle = Path("dist/runlobby")
 suffix = ".exe" if os.name == "nt" else ""
-for name in ("rlb", "codex-lobby", "cxl", "codex-switch", "codex-vpn"):
+for name in ("rlb", "codex-lobby", "cxl", "codex-switch", "codex-vpn", "codex-proxy"):
     shutil.copy2(bundle / ("runlobby" + suffix), bundle / (name + suffix))
-for name in ("LICENSE", "README.md"):
+for name in ("LICENSE", "README.md", "CHANGELOG.md"):
     shutil.copy2(name, bundle / name)
+shutil.copytree("docs", bundle / "docs", dirs_exist_ok=True)
 archive_name = f"runlobby-{__version__}-{platform_key()}"
 archive = Path(shutil.make_archive(str(Path("dist") / archive_name), "zip" if os.name == "nt" else "gztar", "dist", "runlobby"))
 archive.with_name(archive.name + ".sha256").write_text(hashlib.sha256(archive.read_bytes()).hexdigest() + "  " + archive.name + "\n")

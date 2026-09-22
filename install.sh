@@ -1,7 +1,7 @@
 #!/bin/sh
 set -eu
 
-version=1.4.0
+version=1.4.1
 case "$(uname -s)" in
   Darwin) lobby_os=darwin ;;
   Linux) lobby_os=linux ;;
@@ -31,7 +31,7 @@ lobby_bin="$HOME/.local/bin"
 mkdir -p "$(dirname "$lobby_root")" "$lobby_bin"
 # Keep old versions intact so open sessions and their status hooks keep working.
 if [ ! -d "$lobby_root" ]; then mv "$lobby_tmp/runlobby" "$lobby_root"; fi
-for name in runlobby rlb codex-lobby cxl codex-switch codex-vpn; do
+for name in runlobby rlb codex-lobby cxl codex-switch codex-vpn codex-proxy; do
   if [ -e "$lobby_bin/$name" ] && [ ! -L "$lobby_bin/$name" ]; then
     printf 'Existing %s was kept. Launch: %s/rlb\n' "$lobby_bin/$name" "$lobby_root"
   else

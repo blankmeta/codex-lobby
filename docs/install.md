@@ -10,6 +10,8 @@ The short command is **`rlb`**. `runlobby` opens the same menu. `codex-lobby`, `
 
 The macOS/Linux script and Windows installer download a standalone app, check SHA-256 and install for the current user. Python and administrator access are not required. They keep older versions so existing sessions can finish. On Linux, open a new terminal if the installer added `~/.local/bin` to your shell path. On Windows, `rlb` works in the installing PowerShell session immediately and in newly opened terminals.
 
+Homebrew installs the same standalone macOS build, including its Python runtime. It does not require global Node, Python, Xray or compiler packages. RunLobby prepares the native tools when you choose a provider. Apple Silicon builds are checked on macOS 14; Intel builds are checked on macOS 15.
+
 Standalone Linux x64 builds target glibc 2.35+; ARM64 builds target glibc 2.39+. Alpine/musl is not supported by these standalone builds. Windows ARM runs the x64 app through Windows' x64 emulation. The downloadable archives include `runlobby`, `rlb` and compatibility launchers; portable extraction also works.
 
 Choose **Add account → ChatGPT or Claude**. RunLobby installs missing native dependencies from official sources, checks their pinned hashes, then opens the provider's browser sign-in. Settings → Install tools can prepare either provider separately. VLESS setup installs Xray if needed. On Windows, RunLobby reuses Git Bash when present or installs a verified portable copy for Claude. RunLobby does not require WSL.

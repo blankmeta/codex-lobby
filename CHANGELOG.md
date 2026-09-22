@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.4.1
+
+- Install the standalone macOS build through Homebrew, without upgrading global Node, Python or Xray packages. This avoids compiler dependencies on macOS 14.
+- Include the original `codex-proxy` entry point in standalone builds and verify it after installation.
+- Bundle the usage guide and changelog with the application.
+
 ## 1.4.0
 
 Continues the 1.x release series after 1.3.0 and supersedes the release numbered 2.0.1.
