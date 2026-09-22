@@ -2,8 +2,6 @@ import copy
 import json
 import os
 from pathlib import Path
-import shlex
-import signal
 import socket
 import subprocess
 import tempfile
@@ -13,6 +11,8 @@ from codex_switch.domain.errors import SwitchError
 from codex_switch.domain.models import ProxyStatus, Server
 from .processes import require_binary
 from .storage import atomic_json, exclusive, read_json
+from .platforms import current_platform
+from .http_probe import proxy_get
 
 
 def xray_config(server: Server, port: int) -> dict:
@@ -35,29 +35,24 @@ def equivalent_outbound(old: dict, new: dict) -> bool:
 
 
 class XrayProxy:
-    def __init__(self, directory: Path, port: int = 10810, legacy_directory: Path | None = None):
+    def __init__(self, directory: Path, port: int = 10810, legacy_directory: Path | None = None, processes=None, tools=None):
         if not 1 <= port <= 65535:
             raise SwitchError("Порт должен быть от 1 до 65535.")
         self.directory, self.port, self.legacy = directory, port, legacy_directory
         self.config = directory / "xray.json"
         self.state_file = directory / "xray-state.json"
         self.url = f"http://127.0.0.1:{port}"
+        self.tools = tools
         self._process = None
+        self.processes = processes or current_platform().processes
 
-    @staticmethod
-    def owns(pid: int, config: Path) -> bool:
-        if not isinstance(pid, int) or pid <= 1:
-            return False
-        result = subprocess.run(["/bin/ps", "-p", str(pid), "-o", "command="], capture_output=True, text=True, timeout=5)
-        try:
-            args = shlex.split(result.stdout)
-        except ValueError:
-            return False
-        return bool(args and Path(args[0]).name == "xray" and str(config) in args)
+    def owns(self, pid: int, config: Path) -> bool:
+        return self.processes.identity(pid, config) is not None
 
     def _state(self) -> dict:
         data = read_json(self.state_file, {})
-        if data and self.owns(data.get("pid"), self.config):
+        identity = self.processes.identity(data.get("pid"), self.config) if data else None
+        if identity is not None and data.get("created_at", identity) == identity:
             return {**data, "legacy": False}
         if self.legacy:
             try:
@@ -77,6 +72,8 @@ class XrayProxy:
         return ProxyStatus(True, f"http://127.0.0.1:{data['port']}", data.get("server_id"))
 
     def validate(self, server: Server) -> None:
+        if self.tools:
+            self.tools.ensure(["xray"])
         self.directory.mkdir(parents=True, exist_ok=True, mode=0o700)
         fd, name = tempfile.mkstemp(prefix=".validate-", suffix=".json", dir=self.directory)
         try:
@@ -103,7 +100,7 @@ class XrayProxy:
                     new = server.outbound
                     if equivalent_outbound(old, new):
                         return self.status()
-                raise SwitchError("Другой прокси уже работает. Заверши его сессии, выполни codex-switch stop и попробуй снова.")
+                raise SwitchError("Другой прокси уже работает. Заверши его сессии, выполни codex-lobby stop и попробуй снова.")
             self.validate(server)
             with socket.socket() as sock:
                 try:
@@ -112,7 +109,7 @@ class XrayProxy:
                     raise SwitchError(f"Порт {self.port} занят другим приложением. Укажи другой через CODEX_PROXY_PORT.") from None
             atomic_json(self.config, xray_config(server, self.port))
             process = subprocess.Popen([require_binary("xray"), "run", "-c", str(self.config)], stdin=subprocess.DEVNULL,
-                                       stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=True)
+                                       stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, **self.processes.detached_options())
             try:
                 deadline = time.monotonic() + 5
                 while time.monotonic() < deadline:
@@ -125,7 +122,10 @@ class XrayProxy:
                         time.sleep(0.05)
                 else:
                     raise SwitchError("Xray не успел запуститься.")
-                atomic_json(self.state_file, {"pid": process.pid, "port": self.port, "server_id": server.id})
+                identity = self.processes.identity(process.pid, self.config)
+                if identity is None:
+                    raise SwitchError("Could not verify the proxy process.")
+                atomic_json(self.state_file, {"pid": process.pid, "created_at": identity, "port": self.port, "server_id": server.id})
                 self._process = process
             except BaseException:
                 process.terminate()
@@ -144,10 +144,7 @@ class XrayProxy:
             pid = state["pid"]
             if not self.owns(pid, config):
                 raise SwitchError("Процесс изменился. Другие приложения не остановлены.")
-            try:
-                os.kill(pid, signal.SIGTERM)
-            except ProcessLookupError:
-                pass
+            self.processes.stop(pid, config, state.get("created_at"))
             if self._process and self._process.pid == pid:
                 self._process.wait(timeout=5)
                 self._process = None
@@ -156,7 +153,7 @@ class XrayProxy:
                     break
                 time.sleep(0.1)
             else:
-                raise SwitchError("Xray ещё завершается. Повтори codex-switch stop через несколько секунд.")
+                raise SwitchError("Xray ещё завершается. Повтори codex-lobby stop через несколько секунд.")
             if state["legacy"]:
                 (self.legacy / "xray.pid").unlink(missing_ok=True)
             else:
@@ -168,9 +165,7 @@ class XrayProxy:
         if not state.running:
             return False
         try:
-            result = subprocess.run(["/usr/bin/curl", "--silent", "--output", "/dev/null", "--write-out", "%{http_code}",
-                                     "--proxy", state.url, "--noproxy", "", "--connect-timeout", "5", "--max-time", "10",
-                                     "https://api.openai.com/v1/models"], capture_output=True, text=True, timeout=12)
-            return result.returncode == 0 and result.stdout.strip() in ("200", "401")
+            status, _ = proxy_get(state.url, "https://api.openai.com/v1/models")
+            return status in (200, 401)
         except (OSError, subprocess.TimeoutExpired):
             return False

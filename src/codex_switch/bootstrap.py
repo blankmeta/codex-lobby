@@ -8,13 +8,16 @@ from .infrastructure.storage import JsonServers, JsonSettings
 from .infrastructure.xray import XrayProxy
 from .infrastructure.profiles import LocalProfiles
 from .infrastructure.projects import JsonProjects
+from .infrastructure.tools import NativeTools
 
 
 def build_application() -> SwitchApplication:
-    directory = Path(os.environ.get("CODEX_SWITCH_HOME", Path.home() / ".config/codex-switch")).expanduser()
-    # Explicit custom app homes are isolated, including tests and development.
-    legacy = None if "CODEX_SWITCH_HOME" in os.environ else Path.home() / ".config/xray-codex"
+    from .infrastructure.platforms import current_platform
+    platform = current_platform()
+    directory = platform.paths.data_directory()
+    legacy = platform.paths.legacy_directory()
     servers = JsonServers(directory, legacy)
     settings = JsonSettings(directory, servers)
     port = int(os.environ.get("CODEX_PROXY_PORT", "10810"))
-    return SwitchApplication(settings, servers, CodexAuth(), XrayProxy(directory, port, legacy), CodexProcess(), ProcessDiagnostics(), LocalProfiles(directory), JsonProjects(directory))
+    tools = NativeTools(directory)
+    return SwitchApplication(settings, servers, CodexAuth(), XrayProxy(directory, port, legacy, tools=tools), CodexProcess(), ProcessDiagnostics(), LocalProfiles(directory), JsonProjects(directory), tools=tools)

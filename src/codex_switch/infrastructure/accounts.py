@@ -3,7 +3,7 @@ import subprocess
 
 from codex_switch.domain.errors import SwitchError
 from codex_switch.domain.models import Account, UsageWindow
-from .processes import connection_environment, profile_environment, require_binary
+from .processes import command_for, connection_environment, profile_environment, require_binary
 
 
 def decode_account(row: dict) -> Account:
@@ -32,22 +32,22 @@ class CodexAuth:
 
     def _json(self, args: list[str], proxy: str | None) -> dict:
         try:
-            result = self.runner([self.command(), *args, "--json"], stdin=subprocess.DEVNULL, capture_output=True,
-                                 text=True, timeout=20, env=self.environment(proxy))
+            result = self.runner(command_for(self.command(), *args, "--json"), stdin=subprocess.DEVNULL, capture_output=True,
+                                 text=True, encoding="utf-8", timeout=20, env=self.environment(proxy))
         except subprocess.TimeoutExpired:
             raise SwitchError("Обновление аккаунтов не ответило. Повтори позже; сохранённые аккаунты доступны.") from None
         try:
             data = json.loads(result.stdout)
         except (ValueError, TypeError):
-            raise SwitchError("Нужен codex-auth 0.3.0 с JSON-интерфейсом. Запусти brew upgrade blankmeta/tap/codex-switch.") from None
+            raise SwitchError("Нужен codex-auth 0.3.0 с JSON-интерфейсом. Запусти brew upgrade blankmeta/tap/codex-lobby.") from None
         if not isinstance(data, dict) or data.get("schema_version") != 1:
-            raise SwitchError("Версия codex-auth несовместима. Обнови Codex Switch.")
+            raise SwitchError("Версия codex-auth несовместима. Обнови Codex Lobby.")
         if result.returncode or data.get("error"):
             code = (data.get("error") or {}).get("code")
-            message = {"account_not_found": "Аккаунт не найден. Обнови список: codex-switch accounts",
+            message = {"account_not_found": "Аккаунт не найден. Обнови список: codex-lobby accounts",
                        "ambiguous_query": "Не удалось однозначно выбрать аккаунт. Обнови список.",
-                       "state_uncertain": "Состояние аккаунта не подтверждено. Выполни codex-switch accounts перед повтором."}
-            raise SwitchError(message.get(code, "Не удалось выполнить действие с аккаунтом. Проверь: codex-switch accounts"))
+                       "state_uncertain": "Состояние аккаунта не подтверждено. Выполни codex-lobby accounts перед повтором."}
+            raise SwitchError(message.get(code, "Не удалось выполнить действие с аккаунтом. Проверь: codex-lobby accounts"))
         return data
 
     def list(self, *, refresh: bool = False, proxy: str | None = None) -> list[Account]:
@@ -58,7 +58,7 @@ class CodexAuth:
         try:
             return [decode_account(row) for row in data["accounts"]]
         except (KeyError, TypeError, ValueError):
-            raise SwitchError("Не удалось прочитать список аккаунтов. Обнови Codex Switch.") from None
+            raise SwitchError("Не удалось прочитать список аккаунтов. Обнови Codex Lobby.") from None
 
     def switch(self, key: str, *, proxy: str | None = None) -> None:
         result = self._json(["switch", key], proxy)
@@ -66,6 +66,6 @@ class CodexAuth:
             raise SwitchError("Переключение не подтверждено. Codex не запущен; обнови список аккаунтов.")
 
     def login(self, *, proxy: str | None = None) -> None:
-        result = self.runner([self.command(), "login"], env=self.environment(proxy))
+        result = self.runner(command_for(self.command(), "login"), env=self.environment(proxy))
         if result.returncode:
-            raise SwitchError("Вход не завершён. Повтори: codex-switch login")
+            raise SwitchError("Вход не завершён. Повтори: codex-lobby login")

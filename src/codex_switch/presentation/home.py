@@ -1,6 +1,8 @@
 """One entry point for everyday account selection and recovery."""
 from pathlib import Path
 
+from codex_switch.domain.providers import CODEX, CLAUDE
+
 from codex_switch.domain.catalog import account_catalog
 from codex_switch.domain.errors import AccountAlreadyAdded, Cancelled, SwitchError
 from .connection import ConnectionMenu
@@ -32,7 +34,8 @@ class HomeMenu:
 
     def details(self, entry):
         c, a = self.c, entry.account
-        identity = f"{a.email} · {a.plan}" if a else entry.title
+        provider_title = entry.provider.capitalize() if entry.provider != "codex" else "Codex"
+        identity = f"{provider_title} · {a.email} · {a.plan}" if a else entry.title
         state = c.text("Separate sign-in and history", "Отдельный вход и история")
         if entry.original:
             state = c.text("Original setup · shared history", "Прежняя настройка · общая история")
@@ -42,12 +45,15 @@ class HomeMenu:
             state = c.text("Sign in again to continue", "Войди снова, чтобы продолжить")
         elif entry.profile.problem:
             state = clean(entry.profile.problem)
-        action = c.text("Enter: launch Codex", "Enter: запустить Codex")
+        action = c.text(f"Enter: launch {provider_title}", f"Enter: запустить {provider_title}")
         if entry.running:
             action = c.text("Close that session or choose another account", "Закрой ту сессию или выбери другой аккаунт")
         elif entry.needs_login or entry.profile and entry.profile.problem:
             action = c.text("Enter: fix sign-in", "Enter: восстановить вход")
-        return tuple(filter(None, [identity + " · " + state, freshness(a, c.ru), resets(a, c.ru),
+        age = freshness(a, c.ru)
+        if entry.provider == "claude":
+            age = c.text("Limits update while you use Claude; /usage shows current usage.", "Лимиты обновляются во время работы в Claude; текущие данные — /usage.") if not a or not a.updated_at else age
+        return tuple(filter(None, [identity + " · " + state, age, resets(a, c.ru),
                                    action]))
 
     def options(self, entries, bound):
@@ -67,9 +73,9 @@ class HomeMenu:
                 state += c.text(" · original", " · прежний")
             if entry.profile and entry.profile.name == bound:
                 state += c.text(" · this project", " · этот проект")
-            label = f"{clipped(entry.title, 29):29} {primary:>5}   {weekly:>5}{state}"
+            label = f"{clipped(entry.title, 24):24} {entry.provider.capitalize():6} {primary:>5}   {weekly:>5}{state}"
             options.append(Option(entry.id, label, self.details(entry), account_actions=True))
-        options += [Option("add", c.text("+ Add ChatGPT account", "+ Добавить аккаунт ChatGPT"),
+        options += [Option("add", c.text("+ Add account", "+ Добавить аккаунт"),
                            (c.text("Sign in in your browser. No name or configuration required.", "Войди в браузере. Придумывать имя и настраивать файлы не нужно."),)),
                     *([Option("resume", c.text("Continue a saved session", "Продолжить сохранённую сессию")),
                        Option("refresh", c.text("Refresh limits", "Обновить лимиты"))] if entries else
@@ -87,13 +93,13 @@ class HomeMenu:
         return active.id if active else entries[0].id if entries else "add"
 
     def usage_heading(self):
-        return f"  {self.c.text('Remaining', 'Осталось'):29} {self.c.text('5h', '5 ч'):>5}   {self.c.text('Week', 'Неделя'):>5}"
+        return f"  {self.c.text('Account', 'Аккаунт'):24} {self.c.text('App', 'Сервис'):6} {self.c.text('5h', '5 ч'):>5}   {self.c.text('Week', 'Неделя'):>5}"
 
     def list_accounts(self, *, refresh=False):
         entries = self.snapshot(refresh=refresh)
         self.c.say("Your ChatGPT accounts", "Твои аккаунты ChatGPT")
         if not entries:
-            self.c.say("No accounts yet. Run codex-switch to add one.", "Аккаунтов пока нет. Запусти codex-switch, чтобы добавить.")
+            self.c.say("No accounts yet. Run codex-lobby to add one.", "Аккаунтов пока нет. Запусти codex-lobby, чтобы добавить.")
         for option in self.options(entries, self.app.projects.bound())[:len(entries)]:
             self.c.write(clean(option.label))
             for line in option.details[:3]:
@@ -122,7 +128,7 @@ class HomeMenu:
                 options = self.options(entries, bound)
                 if missing:
                     options.insert(0, Option("missing", c.text("Project account is unavailable · choose another", "Аккаунт проекта недоступен · выбрать другой")))
-                key = self.menu.choose("Codex Switch", options, "missing" if missing else self.default(entries, bound), context)
+                key = self.menu.choose("Codex Lobby", options, "missing" if missing else self.default(entries, bound), context)
                 self.notice = ""
                 if key in (None, "quit"):
                     return 0
@@ -161,7 +167,7 @@ class HomeMenu:
                                                 self.default(entries, bound))
                     entry = next((e for e in entries if e.id == selected), None)
                     if entry:
-                        result = self.start(entry, ["resume"])
+                        result = self.start(entry, self.resume_args(entry))
                         if result is not None:
                             return result
                     entries = self.snapshot()
@@ -181,14 +187,30 @@ class HomeMenu:
                 # Recovery stays inside the same menu; the chosen identity is retained.
                 entries = self.snapshot()
 
+    def resume_args(self, entry):
+        return self.app.profiles.resume_arguments(entry.profile.name) if entry.profile else ["resume"]
+
     def sign_in(self, name=None):
         c = self.c
+        provider = None
+        if name is None:
+            choices = self.app.available_providers()
+            key = self.menu.choose(c.text("Which account would you like to add?", "Какой аккаунт добавить?"),
+                                   [Option(p.id, p.account_label, (c.text("Sign in in your browser", "Вход через браузер"),)) for p in choices]
+                                   + [Option("back", c.text("Back", "Назад"))])
+            if key in (None, "back"):
+                return None
+            provider = key
+        title = next((p.account_label for p in self.app.available_providers() if p.id == provider), "your account")
         while True:
-            c.say("Sign in to ChatGPT in your browser, then return here.", "Войди в ChatGPT в браузере и вернись сюда.")
+            c.say(f"Sign in to {title} in your browser, then return here.", "Войди в аккаунт в браузере и вернись сюда.")
             if name is None:
                 c.say("Adding another account? Choose the other email in the browser.", "Добавляешь другой аккаунт? Выбери в браузере другой email.")
             try:
-                status = self.app.login_profile(name)
+                if provider:
+                    c.say(f"Preparing {title}…", f"Подготавливаю {title}…")
+                    self.app.prepare_provider(provider)
+                status = self.app.login_profile(name, **({"provider": provider} if provider else {}))
                 self.selected = "profile:" + status.name
                 c.say(f"✓ Signed in: {clean(status.title)}", f"✓ Вход выполнен: {clean(status.title)}")
                 return status.name
@@ -249,7 +271,7 @@ class HomeMenu:
             self.app.select_account(entry.account.key)
             c.say(f"✓ Selected: {clean(entry.title)}", f"✓ Выбран: {clean(entry.title)}")
             return 0
-        c.say(f"\nStarting Codex · {clean(entry.title)}\n", f"\nЗапускаю Codex · {clean(entry.title)}\n")
+        c.say(f"\nStarting {entry.provider.capitalize()} · {clean(entry.title)}\n", f"\nЗапускаю {entry.provider.capitalize()} · {clean(entry.title)}\n")
         if entry.profile:
             result = self.app.launch_profile(entry.profile.name, args)
             if result == 0 and self.app.projects.bound() is None:
@@ -283,6 +305,7 @@ class HomeMenu:
                                    [Option("project", c.text("Account for this project", "Аккаунт для этого проекта")),
                                     Option("accounts", c.text("Manage accounts / continue a session", "Управлять аккаунтами / продолжить сессию")),
                                     Option("connection", c.text("Connection · optional VLESS", "Подключение · VLESS по желанию")),
+                                    Option("tools", c.text("Install tools", "Установить инструменты")),
                                     Option("language", "Language / Язык"),
                                     Option("back", c.text("Back to accounts", "К аккаунтам"))])
             if key in (None, "back"):
@@ -291,6 +314,14 @@ class HomeMenu:
                 self.choose_default(entries)
             elif key == "connection":
                 self.connection.run()
+            elif key == "tools":
+                selected = self.menu.choose(c.text("Install tools", "Установить инструменты"),
+                                            [Option(p.id, p.title) for p in self.app.available_providers()]
+                                            + [Option("back", c.text("Back", "Назад"))])
+                if selected not in (None, "back"):
+                    c.say("Installing missing tools…", "Устанавливаю недостающие инструменты…")
+                    self.app.prepare_provider(selected)
+                    self.notice = c.text("Tools are ready.", "Инструменты готовы.")
             elif key == "language":
                 language = self.menu.choose("Language / Язык", [Option("en", "English"), Option("ru", "Русский")], "ru" if c.ru else "en")
                 if language:
@@ -320,7 +351,7 @@ class HomeMenu:
         options += [Option("back", c.text("Back", "Назад"))]
         key = self.menu.choose(clean(entry.title), options, context=self.details(entry)[:3])
         if key == "resume":
-            return self.start(entry, ["resume"])
+            return self.start(entry, self.resume_args(entry))
         if key == "login":
             if entry.profile:
                 self.sign_in(entry.profile.name)

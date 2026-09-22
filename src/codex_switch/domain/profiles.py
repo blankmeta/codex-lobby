@@ -7,7 +7,8 @@ from .models import Account
 
 
 def profile_name(value: str) -> str:
-    if not re.fullmatch(r"[a-z][a-z0-9_-]{0,31}", value):
+    if (not re.fullmatch(r"[a-z][a-z0-9_-]{0,31}", value)
+            or value in {"con", "prn", "aux", "nul", *(f"com{i}" for i in range(10)), *(f"lpt{i}" for i in range(10))}):
         raise SwitchError("Profile name: use 1–32 lowercase letters, numbers, '-' or '_'; start with a letter.")
     return value
 
@@ -19,6 +20,7 @@ class ProfileStatus:
     running: bool = False
     problem: str | None = None
     label: str | None = None
+    provider: str = "codex"
 
     @property
     def title(self) -> str:
@@ -39,7 +41,7 @@ def validate_profile_arguments(args: list[str]) -> None:
                  "openai_base_url", "sqlite_home", "log_dir"}
     for index, arg in enumerate(args):
         if arg in ("-p", "--profile") or arg.startswith(("--profile=", "-p")):
-            raise SwitchError("Codex config profiles cannot override an account profile. Use codex-switch run <name>.")
+            raise SwitchError("Codex config profiles cannot override an account profile. Use codex-lobby run <name>.")
         value = None
         if arg in ("-c", "--config") and index + 1 < len(args):
             value = args[index + 1]
@@ -52,4 +54,4 @@ def validate_profile_arguments(args: list[str]) -> None:
             if key in protected:
                 raise SwitchError("Account and storage overrides are unavailable in an isolated profile.")
     if args[:1] and args[0] in ("login", "logout"):
-        raise SwitchError("Manage profile sign-in with codex-switch login <name>.")
+        raise SwitchError("Manage profile sign-in with codex-lobby login <name>.")

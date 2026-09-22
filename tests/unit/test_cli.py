@@ -43,7 +43,7 @@ class CLITests(unittest.TestCase):
         cli, _, events, lines = self.cli([])
         self.assertEqual(cli.run(["--help"]), 0)
         self.assertEqual(events, [])
-        self.assertIn("Codex Switch", lines[0])
+        self.assertIn("Codex Lobby", lines[0])
 
     def test_russian_account_prompt(self):
         cli, _, _, lines = self.cli([""], "ru")

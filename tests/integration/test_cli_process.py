@@ -14,7 +14,7 @@ class CLIProcessTests(unittest.TestCase):
             directory = Path(folder)
             binaries = directory / "bin"
             binaries.mkdir()
-            auth = binaries / "codex-auth"
+            auth = binaries / "codex-auth.py"
             auth.write_text(f'''#!{sys.executable}
 import json,sys
 from pathlib import Path
@@ -26,7 +26,7 @@ elif args[0]=='switch':
  print(json.dumps({{"schema_version":1,"switched_to":{{"account_key":args[1]}}}}))
 ''')
             auth.chmod(0o755)
-            codex = binaries / "codex"
+            codex = binaries / "codex.py"
             codex.write_text(f'''#!{sys.executable}
 import json,sys
 from pathlib import Path
@@ -34,7 +34,7 @@ Path({str(directory / 'args.json')!r}).write_text(json.dumps(sys.argv[1:]))
 sys.exit(7)
 ''')
             codex.chmod(0o755)
-            env = {**os.environ, "PATH": str(binaries) + os.pathsep + os.environ["PATH"], "PYTHONPATH": str(root / "src"),
+            env = {**os.environ, "CODEX_LOBBY_CODEX_BINARY": str(codex), "CODEX_LOBBY_CODEX_AUTH_BINARY": str(auth), "PATH": str(binaries) + os.pathsep + os.environ["PATH"], "PYTHONPATH": str(root / "src"),
                    "CODEX_SWITCH_HOME": str(directory / "app"), "CODEX_SWITCH_LANG": "en"}
             result = subprocess.run([sys.executable, "-m", "codex_switch", "--", "exec", "an argument with spaces"],
                                     input="2\n", capture_output=True, text=True, env=env, timeout=10)
@@ -52,7 +52,7 @@ sys.exit(7)
             original = directory / "original"
             original.mkdir()
             (original / "auth.json").write_text('{"untouched":true}')
-            auth = binaries / "codex-auth"
+            auth = binaries / "codex-auth.py"
             auth.write_text(f'''#!{sys.executable}
 import json,os
 from pathlib import Path
@@ -62,7 +62,7 @@ rows=[{{"account_key":"personal","email":"personal@example.com","active":True}}]
 print(json.dumps({{"schema_version":1,"accounts":rows}}))
 ''')
             auth.chmod(0o755)
-            codex = binaries / "codex"
+            codex = binaries / "codex.py"
             codex.write_text(f'''#!{sys.executable}
 import json,os,sys
 from pathlib import Path
@@ -74,12 +74,12 @@ else:
  sys.exit(7)
 ''')
             codex.chmod(0o755)
-            env = {**os.environ, "PATH": str(binaries) + os.pathsep + os.environ["PATH"], "PYTHONPATH": str(root / "src"),
+            env = {**os.environ, "CODEX_LOBBY_CODEX_BINARY": str(codex), "CODEX_LOBBY_CODEX_AUTH_BINARY": str(auth), "PATH": str(binaries) + os.pathsep + os.environ["PATH"], "PYTHONPATH": str(root / "src"),
                    "CODEX_SWITCH_HOME": str(directory / "app"), "CODEX_HOME": str(original), "CODEX_SWITCH_LANG": "en"}
             def run(*args, input=None):
                 return subprocess.run([sys.executable, "-m", "codex_switch", *args], input=input,
                                       capture_output=True, text=True, env=env, cwd=directory, timeout=10)
-            launched = run("--", "exec", "argument with spaces", input="1\n")
+            launched = run("--", "exec", "argument with spaces", input="1\n1\n")
             self.assertEqual(launched.returncode, 7, launched.stdout + launched.stderr)
             homes = list((directory / "app/profiles").glob("account-*"))
             self.assertEqual(len(homes), 1)

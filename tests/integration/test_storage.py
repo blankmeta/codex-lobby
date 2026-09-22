@@ -1,5 +1,6 @@
 from dataclasses import asdict
 import json
+import os
 from pathlib import Path
 import tempfile
 import unittest
@@ -20,8 +21,9 @@ class StorageTests(unittest.TestCase):
             store.save(server)
             store.save(server)
             self.assertEqual(JsonServers(path).list(), [server])
-            self.assertEqual(store.path.stat().st_mode & 0o777, 0o600)
-            self.assertEqual(path.stat().st_mode & 0o777, 0o700)
+            if os.name != "nt":
+                self.assertEqual(store.path.stat().st_mode & 0o777, 0o600)
+                self.assertEqual(path.stat().st_mode & 0o777, 0o700)
             settings = JsonSettings(path, store)
             settings.save(Preferences(True, False))
             self.assertFalse(settings.load().proxy_enabled)

@@ -12,7 +12,7 @@ def window_json(window):
 def status_json(app, profiles):
     return {"schema_version": 1,
             "project": {"path": app.projects.current(), "profile": app.projects.bound()},
-            "profiles": [{"name": p.name, "running": p.running,
+            "profiles": [{"name": p.name, "provider": p.provider, "running": p.running,
                           "state": "error" if p.problem else "running" if p.running else "login_required" if not p.account or p.account.needs_login else "ready",
                           "message": p.problem,
                           "account": None if not p.account else {
@@ -31,37 +31,38 @@ def status_line(profiles, bound):
     if selected is None:
         return "Codex: choose profile" if profiles else "Codex: no profiles"
     if selected.problem or not selected.account or selected.account.needs_login:
-        return f"Codex {selected.name}: check login"
+        return f"{selected.provider.capitalize()} {selected.name}: check login"
     account = selected.account
     primary = f"{account.primary.remaining}%" if account.primary else "?"
     weekly = f"{account.secondary.remaining}%" if account.secondary else "?"
     running = " running" if selected.running else ""
-    return f"Codex {selected.name}: 5h {primary} / week {weekly}{running} (snapshot)"
+    return f"{selected.provider.capitalize()} {selected.name}: 5h {primary} / week {weekly}{running} (snapshot)"
 
 
 class ProfileCLI:
     def __init__(self, app, console):
         self.app, self.c = app, console
 
-    def login(self, name=None):
+    def login(self, name=None, provider=None):
         if name is not None:
             profile_name(name)
         if not self.app.settings.load().configured:
             self.app.use_direct_connection()
         self.c.say("Sign in to ChatGPT in the browser. This profile has its own sessions.",
                    "Войди в ChatGPT в браузере. У этого профиля будет отдельная история сессий.")
-        status = self.app.login_profile(name)
-        self.c.say(f"✓ Saved '{status.title}'. Start: codex-switch", f"✓ Сохранён '{status.title}'. Запустить: codex-switch")
+        self.app.prepare_provider(provider or "codex")
+        status = self.app.login_profile(name, **({"provider": provider} if provider else {}))
+        self.c.say(f"✓ Saved '{status.title}'. Start: codex-lobby", f"✓ Сохранён '{status.title}'. Запустить: codex-lobby")
         return status.name
 
     def choose(self):
         profiles = self.app.profile_status()
         bound = self.app.projects.bound()
         if bound and bound not in [p.name for p in profiles]:
-            raise SwitchError("The project's profile is missing. Run codex-switch unbind or sign in to that profile again.")
+            raise SwitchError("The project's profile is missing. Run codex-lobby unbind or sign in to that profile again.")
         self.c.show_profiles(profiles, bound)
         if not profiles:
-            raise SwitchError("No profiles yet. Add one: codex-switch login personal")
+            raise SwitchError("No profiles yet. Add one: codex-lobby login personal")
         if len(profiles) == 1:
             return profiles[0].name
         default = next((i for i, p in enumerate(profiles, 1) if p.name == bound), 1)
@@ -76,13 +77,25 @@ class ProfileCLI:
     def handle(self, args):
         command = args[0] if args else ""
         if command == "login":
-            if len(args) > 2:
-                raise SwitchError("Usage: codex-switch login [profile]")
-            self.login(args[1] if len(args) == 2 else None)
+            values = list(args[1:])
+            provider = None
+            if "--provider" in values:
+                i = values.index("--provider")
+                if i + 1 >= len(values):
+                    raise SwitchError("Choose --provider codex or --provider claude.")
+                provider = values[i + 1]
+                del values[i:i + 2]
+            if len(values) > 1:
+                raise SwitchError("Usage: cxl login [name] [--provider codex|claude]")
+            if provider is None and not values:
+                from .home import HomeMenu
+                HomeMenu(self.app, self.c).sign_in()
+            else:
+                self.login(values[0] if values else None, provider)
             return 0
         if command in ("profiles", "status") or command == "accounts" and self.app.profiles.names():
             if any(arg not in ("--json", "--refresh", "--line") for arg in args[1:]):
-                raise SwitchError("Usage: codex-switch profiles [--json] [--refresh]")
+                raise SwitchError("Usage: codex-lobby profiles [--json] [--refresh]")
             if "--json" in args and "--line" in args:
                 raise SwitchError("Choose --json or --line.")
             profiles = self.app.profile_status(refresh="--refresh" in args)
@@ -96,20 +109,20 @@ class ProfileCLI:
             return 0
         if command == "bind":
             if len(args) > 2:
-                raise SwitchError("Usage: codex-switch bind [profile]")
+                raise SwitchError("Usage: codex-lobby bind [profile]")
             name = args[1] if len(args) == 2 else self.choose()
             self.app.bind_profile(name)
             self.c.say(f"✓ This project defaults to '{name}'.", f"✓ Для этого проекта выбран '{name}'.")
             return 0
         if command == "unbind":
             if len(args) != 1:
-                raise SwitchError("Usage: codex-switch unbind")
+                raise SwitchError("Usage: codex-lobby unbind")
             self.app.projects.unbind()
             self.c.say("✓ Project preference removed. Profiles and sessions were kept.", "✓ Привязка снята. Профили и сессии сохранены.")
             return 0
         if command == "run":
             if len(args) < 2:
-                raise SwitchError("Usage: codex-switch run <profile> [-- <Codex arguments>]")
+                raise SwitchError("Usage: codex-lobby run <profile> [-- <Codex arguments>]")
             forwarded = args[2:]
             if forwarded[:1] == ["--"]:
                 forwarded = forwarded[1:]

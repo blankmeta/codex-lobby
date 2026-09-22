@@ -5,16 +5,28 @@ from uuid import uuid4
 from codex_switch.application.ports import Accounts, Codex, Diagnostics, Proxy, Servers, Settings, Profiles, Projects
 from codex_switch.domain.profiles import profile_name, validate_profile_arguments
 from codex_switch.domain.errors import SwitchError
+from codex_switch.domain.providers import CODEX, CLAUDE
 from codex_switch.domain.models import Account, Preferences, Server
 from codex_switch.domain.vless import parse_vless
 
 
 class SwitchApplication:
-    def __init__(self, settings: Settings, servers: Servers, accounts: Accounts, proxy: Proxy, codex: Codex, diagnostics: Diagnostics, profiles: Profiles | None = None, projects: Projects | None = None):
+    def __init__(self, settings: Settings, servers: Servers, accounts: Accounts, proxy: Proxy, codex: Codex, diagnostics: Diagnostics, profiles: Profiles | None = None, projects: Projects | None = None, tools=None):
         self.settings, self.servers = settings, servers
         self.accounts, self.proxy, self.codex = accounts, proxy, codex
         self.diagnostics = diagnostics
         self.profiles, self.projects = profiles, projects
+        self.tools = tools
+
+    def prepare_provider(self, provider_id):
+        if self.tools:
+            provider = next((p for p in self.available_providers() if p.id == provider_id), None)
+            if provider is None:
+                raise SwitchError("Choose Codex or Claude.")
+            self.tools.ensure(provider.tools)
+
+    def available_providers(self):
+        return self.profiles.provider_choices()
 
     def use_direct_connection(self) -> None:
         self.settings.save(replace(self.settings.load(), configured=True, proxy_enabled=False, selected_server=None))
@@ -38,12 +50,12 @@ class SwitchApplication:
             return None
         server = next((s for s in self.servers.list() if s.id == preferences.selected_server), None)
         if server is None:
-            raise SwitchError("Добавь подключение: codex-switch setup")
+            raise SwitchError("Добавь подключение: codex-lobby setup")
         state = self.proxy.status()
         if not state.running or state.server_id != server.id:
             state = self.proxy.start(server)
         if not state.running or not state.url:
-            raise SwitchError("Прокси не запустился. Проверь подключение: codex-switch doctor")
+            raise SwitchError("Прокси не запустился. Проверь подключение: codex-lobby doctor")
         return state.url
 
     def list_accounts(self, *, refresh: bool = False) -> list[Account]:
@@ -67,10 +79,10 @@ class SwitchApplication:
         with ThreadPoolExecutor(max_workers=4) as workers:
             return list(workers.map(lambda name: self.profiles.inspect(name, refresh=refresh, proxy=proxy), names))
 
-    def login_profile(self, name: str | None = None):
+    def login_profile(self, name: str | None = None, *, provider: str | None = None):
         name = name or "account-" + uuid4().hex[:12]
         profile_name(name)
-        return self.profiles.login(name, proxy=self.connection())
+        return self.profiles.login(name, proxy=self.connection(), **({"provider": provider} if provider else {}))
 
     def remove_profile(self, name: str) -> None:
         bound = self.projects.bound()
@@ -86,10 +98,10 @@ class SwitchApplication:
     def bind_profile(self, name: str) -> None:
         profile_name(name)
         if name not in self.profiles.names():
-            raise SwitchError("Profile not found. Create it with codex-switch login <name>.")
+            raise SwitchError("Profile not found. Create it with codex-lobby login <name>.")
         self.projects.bind(name)
 
     def launch_profile(self, name: str, args: list[str]) -> int:
         profile_name(name)
-        validate_profile_arguments(args)
+        self.profiles.validate_arguments(name, args)
         return self.profiles.run(name, args, proxy=self.connection())

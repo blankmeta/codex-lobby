@@ -1,6 +1,7 @@
 from dataclasses import asdict
 import json
 import os
+import psutil
 from pathlib import Path
 import subprocess
 import sys
@@ -41,12 +42,16 @@ class ProfileStorageTests(unittest.TestCase):
         sub = repo / "src"
         sub.mkdir()
         linked = self.root / "linked"
-        linked.symlink_to(sub, target_is_directory=True)
+        try:
+            linked.symlink_to(sub, target_is_directory=True)
+        except OSError:
+            linked = sub
         store = JsonProjects(self.root / "app", cwd=lambda: linked)
         store.bind("work")
         self.assertEqual(store.current(), str(repo.resolve()))
         self.assertEqual(JsonProjects(self.root / "app", cwd=lambda: repo).bound(), "work")
-        self.assertEqual(store.path.stat().st_mode & 0o777, 0o600)
+        if os.name != "nt":
+            self.assertEqual(store.path.stat().st_mode & 0o777, 0o600)
         self.assertFalse((repo / "projects.json").exists())
         store.unbind()
         self.assertIsNone(store.bound())
@@ -96,7 +101,8 @@ class ProfileStorageTests(unittest.TestCase):
         adapter = LocalProfiles(self.root, self.login_runner("work"), LocalAuth, "/fake/codex")
         adapter.login("work")
         self.assertEqual(adapter.names(), ["work"])
-        self.assertEqual((adapter.home("work") / "auth.json").stat().st_mode & 0o777, 0o600)
+        if os.name != "nt":
+            self.assertEqual((adapter.home("work") / "auth.json").stat().st_mode & 0o777, 0o600)
         self.assertEqual(json.loads((original / "auth.json").read_text()), {"original": True})
         self.assertEqual(list(adapter.directory.glob(".login-*")), [])
 
@@ -122,7 +128,7 @@ class ProfileStorageTests(unittest.TestCase):
 
     def test_parallel_processes_keep_separate_homes_and_hold_lifetime_locks(self):
         for name in ("work", "personal"): seed(self.root, name)
-        fake = self.root / "codex"
+        fake = self.root / "codex.py"
         fake.write_text(f'''#!{sys.executable}
 import os,time,json
 from pathlib import Path
@@ -241,15 +247,15 @@ raise SystemExit(LocalProfiles(Path(sys.argv[1]),runner=runner,auth_factory=Loca
             self.assertIsNone(parent.poll(), "native app-server exited before the test")
             parent.kill()
             parent.wait(timeout=5)
-            os.kill(child_pid, 0)
+            self.assertTrue(psutil.pid_exists(child_pid))
             self.assertTrue(adapter.inspect("work").running)
         finally:
             if parent.poll() is None:
                 parent.kill(); parent.wait(timeout=5)
             if parent.stdin: parent.stdin.close()
             if child_pid:
-                try: os.kill(child_pid, signal.SIGTERM)
-                except ProcessLookupError: pass
+                try: psutil.Process(child_pid).terminate()
+                except psutil.NoSuchProcess: pass
         deadline = time.monotonic() + 5
         while adapter.inspect("work").running and time.monotonic() < deadline:
             time.sleep(0.02)

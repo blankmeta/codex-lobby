@@ -1,6 +1,7 @@
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import json
 import os
+import psutil
 from pathlib import Path
 import shutil
 import socket
@@ -14,6 +15,7 @@ from codex_switch.domain.errors import SwitchError
 from codex_switch.domain.vless import parse_vless
 from codex_switch.infrastructure.storage import atomic_json
 from codex_switch.infrastructure.xray import XrayProxy
+from codex_switch.infrastructure.http_probe import proxy_get
 from tests.unit.test_domain import LINK
 
 
@@ -42,7 +44,7 @@ class XrayTunnelTests(unittest.TestCase):
             def do_GET(self):
                 self.send_response(200)
                 self.end_headers()
-                self.wfile.write(b"codex-switch-local-tunnel-ok")
+                self.wfile.write(b"codex-lobby-local-tunnel-ok")
             def log_message(self, *args): pass
 
         target = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
@@ -65,10 +67,9 @@ class XrayTunnelTests(unittest.TestCase):
                 time.sleep(.2)
                 state = proxy.start(parse_vless(f"vless://{uuid}@127.0.0.1:{port}"))
                 self.assertTrue(state.running)
-                response = subprocess.run(["/usr/bin/curl", "--silent", "--fail", "--max-time", "5", "--noproxy", "",
-                                           "--proxy", state.url, f"http://127.0.0.1:{target.server_port}"], capture_output=True, text=True)
-                self.assertEqual(response.returncode, 0)
-                self.assertEqual(response.stdout, "codex-switch-local-tunnel-ok")
+                status, body = proxy_get(state.url, f"http://127.0.0.1:{target.server_port}")
+                self.assertEqual(status, 200)
+                self.assertEqual(body.decode(), "codex-lobby-local-tunnel-ok")
                 with self.assertRaises(SwitchError): proxy.start(parse_vless(LINK))
                 self.assertTrue(proxy.status().running)
                 proxy.stop()
@@ -85,4 +86,4 @@ class XrayTunnelTests(unittest.TestCase):
             atomic_json(proxy.state_file, {"pid": os.getpid(), "port": proxy.port, "server_id": "unrelated"})
             proxy.stop()
             self.assertFalse(proxy.status().running)
-            os.kill(os.getpid(), 0)
+            self.assertTrue(psutil.Process(os.getpid()).is_running())

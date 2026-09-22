@@ -1,20 +1,23 @@
 """Real pseudo-terminal journeys through CLI, menu, storage and child launch."""
-import fcntl
 import os
 from pathlib import Path
-import pty
 import select
 import struct
 import subprocess
 import sys
 import tempfile
-import termios
 import time
 import unittest
 
 from .test_profiles import seed
 
+if os.name != "nt":
+    import fcntl
+    import pty
+    import termios
 
+
+@unittest.skipIf(os.name == "nt", "POSIX PTY; native Windows console has its own integration tests")
 class TerminalJourneyTests(unittest.TestCase):
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory()
@@ -48,7 +51,8 @@ root=Path(sys.argv[1])
 app.profiles=LocalProfiles(root, auth_factory=LocalAuth, codex_binary=str(root/'codex'))
 app.projects=JsonProjects(root, cwd=lambda:root)
 app.projects.bind('work')
-raise SystemExit(CLI(app,Console(language='en')).run([]))
+from codex_switch.infrastructure.platforms import current_platform
+raise SystemExit(CLI(app,Console(language='en',terminal=current_platform().terminal)).run([]))
 '''
         repo = Path(__file__).parents[2]
         env = {**os.environ, "TERM": "xterm-256color", "CODEX_SWITCH_LANG": "en",
@@ -94,6 +98,7 @@ raise SystemExit(CLI(app,Console(language='en')).run([]))
     def test_escape_returns_without_launching_or_changing_the_default(self):
         self.until(b"Enter: launch Codex")
         os.write(self.master, b"\x1b")
+        self.until(b"\x1b[?1049l")
         self.assertEqual(self.process.wait(timeout=5), 0)
         self.assert_terminal_restored()
         self.assertNotIn(b"CHILD_ACCOUNT", self.output)

@@ -1,50 +1,46 @@
 name: Tests
-on:
-  push:
-  pull_request:
+on: [push, pull_request]
 permissions:
   contents: read
 jobs:
-  unit-and-storage:
-    runs-on: ubuntu-latest
+  native:
     strategy:
+      fail-fast: false
       matrix:
+        os: [ubuntu-22.04, macos-14, windows-latest]
         python: ['3.11', '3.13']
+    runs-on: ${{ matrix.os }}
+    env:
+      PYTHONPATH: src
+      PYTHONUTF8: '1'
+      CODEX_SWITCH_NETWORK_TESTS: '1'
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python }}
+      - run: python -m pip install .
+      - run: python scripts/ci_tools.py
       - run: python -m unittest discover -s tests -t . -v
-        env:
-          PYTHONPATH: src
-  macos-integration:
-    runs-on: macos-14
+      - run: cxl --version
+      - run: codex-lobby --help
+  bundles:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-22.04, macos-14, macos-15-intel, windows-latest]
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: '3.13'
-      - uses: actions/setup-node@v4
+      - run: python -m pip install . pyinstaller==6.19.0
+      - run: python scripts/build_bundle.py
+      - uses: actions/upload-artifact@v4
         with:
-          node-version: '24'
-      - run: brew install xray
-      - run: npm install --prefix "$RUNNER_TEMP/codex-switch-auth" --ignore-scripts --no-audit --no-fund @loongphy/codex-auth@0.3.0
-      - name: Install pinned Codex package for offline compatibility tests
-        shell: bash
-        run: |
-          case "$(uname -m)" in
-            arm64) codex_arch=aarch64; codex_sha=287e2dd0a9bbfb58581b0a9150399458b4f094ea42caf02860f1e8cb5a202a0b ;;
-            *) codex_arch=x86_64; codex_sha=6e3876e7f4edff2e3dee545e1d3b2334866791a8dfce7e25789bf6799355a4ea ;;
-          esac
-          curl --fail --location --retry 3 "https://github.com/openai/codex/releases/download/rust-v0.153.2/codex-package-${codex_arch}-apple-darwin.tar.gz" -o "$RUNNER_TEMP/codex.tar.gz"
-          echo "$codex_sha  $RUNNER_TEMP/codex.tar.gz" | shasum -a 256 -c -
-          mkdir -p "$RUNNER_TEMP/codex-native"
-          tar -xzf "$RUNNER_TEMP/codex.tar.gz" -C "$RUNNER_TEMP/codex-native"
-      - run: |
-          export CODEX_SWITCH_TEST_AUTH_BINARY="$RUNNER_TEMP/codex-switch-auth/node_modules/.bin/codex-auth"
-          export CODEX_SWITCH_TEST_CODEX_BINARY="$RUNNER_TEMP/codex-native/bin/codex"
-          python -m unittest discover -s tests -t . -v
-        env:
-          PYTHONPATH: src
-          CODEX_SWITCH_NETWORK_TESTS: '1'
+          name: codex-lobby-${{ matrix.os }}
+          path: |
+            dist/*.tar.gz
+            dist/*.zip
+            dist/*.sha256

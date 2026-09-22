@@ -1,19 +1,19 @@
 from contextlib import contextmanager
 from dataclasses import asdict
-import fcntl
 import json
 import os
 from pathlib import Path
 import tempfile
 
 from codex_switch.domain.errors import SwitchError
+from .platforms import current_platform
 from codex_switch.domain.models import Preferences, Server
 from codex_switch.domain.vless import parse_vless
 
 
 def read_json(path: Path, default):
     try:
-        return json.loads(path.read_text()) if path.exists() else default
+        return json.loads(path.read_text(encoding="utf-8")) if path.exists() else default
     except (ValueError, OSError):
         raise SwitchError(f"Не удалось прочитать {path.name}. Файл не изменён.") from None
 
@@ -23,7 +23,7 @@ def atomic_json(path: Path, value) -> None:
     path.parent.chmod(0o700)
     fd, name = tempfile.mkstemp(prefix=".write-", dir=path.parent)
     try:
-        with os.fdopen(fd, "w") as file:
+        with os.fdopen(fd, "w", encoding="utf-8") as file:
             json.dump(value, file, ensure_ascii=False, indent=2)
             file.flush()
             os.fsync(file.fileno())
@@ -34,10 +34,7 @@ def atomic_json(path: Path, value) -> None:
 
 @contextmanager
 def exclusive(directory: Path, name: str):
-    directory.mkdir(parents=True, exist_ok=True, mode=0o700)
-    with (directory / name).open("a") as lock:
-        os.chmod(lock.name, 0o600)
-        fcntl.flock(lock, fcntl.LOCK_EX)
+    with current_platform().locks.acquire(directory / name, wait=True):
         yield
 
 
@@ -53,7 +50,7 @@ class JsonServers:
             try:
                 return [parse_vless(row["raw_url"]) for row in legacy]
             except (TypeError, KeyError, SwitchError):
-                raise SwitchError("Старая VLESS-ссылка требует повторного импорта: codex-switch setup. Исходный файл сохранён.") from None
+                raise SwitchError("Старая VLESS-ссылка требует повторного импорта: codex-lobby setup. Исходный файл сохранён.") from None
         try:
             return [Server(**row) for row in (data or [])]
         except (TypeError, KeyError):

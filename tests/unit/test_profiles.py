@@ -42,6 +42,7 @@ class ProfileUseCaseTests(unittest.TestCase):
         self.app, _ = application()
         self.app.profiles, self.app.projects = Mock(), Mock()
         self.app.profiles.names.return_value = ["personal", "work"]
+        self.app.profiles.validate_arguments.side_effect = lambda name, args: validate_profile_arguments(args)
 
     def test_binding_requires_existing_profile(self):
         with self.assertRaises(SwitchError):

@@ -1,0 +1,224 @@
+{
+  "darwin-x64": {
+    "codex": {
+      "url": "https://github.com/openai/codex/releases/download/rust-v0.153.2/codex-package-x86_64-apple-darwin.tar.gz",
+      "sha256": "6e3876e7f4edff2e3dee545e1d3b2334866791a8dfce7e25789bf6799355a4ea",
+      "version": "0.153.2",
+      "format": "tar",
+      "binary": "bin/codex"
+    },
+    "codex-auth": {
+      "url": "https://registry.npmjs.org/@loongphy/codex-auth-darwin-x64/-/codex-auth-darwin-x64-0.3.0.tgz",
+      "sha512": "827ca7497aaa2671af6e8272189482712ae764abefd532adf27990d495f2c8e7e285f9167c154b53577517687d1604cd705ef958923866cedae5bdfe858f63e9",
+      "version": "0.3.0",
+      "format": "tar",
+      "binary": "package/bin/codex-auth"
+    },
+    "xray": {
+      "url": "https://github.com/XTLS/Xray-core/releases/download/v26.3.27/Xray-macos-64.zip",
+      "sha256": "f5b0471d3459eff1b82e48af0aeac186abcc3298210070afbbbd8437a4e8b203",
+      "version": "26.3.27",
+      "format": "zip",
+      "binary": "xray"
+    },
+    "claude": {
+      "url": "https://downloads.claude.ai/claude-code-releases/2.1.84/darwin-x64/claude",
+      "sha256": "da5ed2ee1b0bcf65c2088e79bc65388ec85edc41041fc6ca7c27330f2e201085",
+      "version": "2.1.84",
+      "format": "binary",
+      "binary": "claude"
+    },
+    "node": {
+      "url": "https://nodejs.org/dist/v24.13.0/node-v24.13.0-darwin-x64.tar.gz",
+      "sha256": "6f03c1b48ddbe1b129a6f8038be08e0899f05f17185b4d3e4350180ab669a7f3",
+      "version": "24.13.0",
+      "format": "tar",
+      "binary": "node-v24.13.0-darwin-x64/bin/node"
+    }
+  },
+  "darwin-arm64": {
+    "codex": {
+      "url": "https://github.com/openai/codex/releases/download/rust-v0.153.2/codex-package-aarch64-apple-darwin.tar.gz",
+      "sha256": "287e2dd0a9bbfb58581b0a9150399458b4f094ea42caf02860f1e8cb5a202a0b",
+      "version": "0.153.2",
+      "format": "tar",
+      "binary": "bin/codex"
+    },
+    "codex-auth": {
+      "url": "https://registry.npmjs.org/@loongphy/codex-auth-darwin-arm64/-/codex-auth-darwin-arm64-0.3.0.tgz",
+      "sha512": "3c006efe3fb4a4e233e1d70386b58bd402003b9daf22fbe34cc4986811d6d02aff6bf4fcb0a9e12da0686853b48c4725855da5e44f833696983cdcf059a8c128",
+      "version": "0.3.0",
+      "format": "tar",
+      "binary": "package/bin/codex-auth"
+    },
+    "xray": {
+      "url": "https://github.com/XTLS/Xray-core/releases/download/v26.3.27/Xray-macos-arm64-v8a.zip",
+      "sha256": "2e93a67e8aa1936ecefb307e120830fcbd4c643ab9b1c46a2d0838d5f8409eaf",
+      "version": "26.3.27",
+      "format": "zip",
+      "binary": "xray"
+    },
+    "claude": {
+      "url": "https://downloads.claude.ai/claude-code-releases/2.1.84/darwin-arm64/claude",
+      "sha256": "c02d911ff13f8ceccb1f6662bf211f3cd9f29d5a46f031c3cc40654eb759aa29",
+      "version": "2.1.84",
+      "format": "binary",
+      "binary": "claude"
+    },
+    "node": {
+      "url": "https://nodejs.org/dist/v24.13.0/node-v24.13.0-darwin-arm64.tar.gz",
+      "sha256": "d595961e563fcae057d4a0fb992f175a54d97fcc4a14dc2d474d92ddeea3b9f8",
+      "version": "24.13.0",
+      "format": "tar",
+      "binary": "node-v24.13.0-darwin-arm64/bin/node"
+    }
+  },
+  "linux-x64": {
+    "codex": {
+      "url": "https://github.com/openai/codex/releases/download/rust-v0.153.2/codex-package-x86_64-unknown-linux-musl.tar.gz",
+      "sha256": "e10fa0cee78e9f0bd395880f03fd4fd227d903ca7af649bbc08d1649101e9225",
+      "version": "0.153.2",
+      "format": "tar",
+      "binary": "bin/codex"
+    },
+    "codex-auth": {
+      "url": "https://registry.npmjs.org/@loongphy/codex-auth-linux-x64/-/codex-auth-linux-x64-0.3.0.tgz",
+      "sha512": "f7176e5d33b747fc65e5c3885b845455c5ab617bc1e7d7e201fd1b6373800cf313380f2bb3c3bad7da6e18cd5f05ae069b5041211473f39766dd123fa2b04525",
+      "version": "0.3.0",
+      "format": "tar",
+      "binary": "package/bin/codex-auth"
+    },
+    "xray": {
+      "url": "https://github.com/XTLS/Xray-core/releases/download/v26.3.27/Xray-linux-64.zip",
+      "sha256": "23cd9af937744d97776ee35ecad4972cf4b2109d1e0fe6be9930467608f7c8ae",
+      "version": "26.3.27",
+      "format": "zip",
+      "binary": "xray"
+    },
+    "claude": {
+      "url": "https://downloads.claude.ai/claude-code-releases/2.1.84/linux-x64/claude",
+      "sha256": "c6872aa8db94f303bc6a4482664e40d3288dfc989c89ba268473ed32e3055878",
+      "version": "2.1.84",
+      "format": "binary",
+      "binary": "claude"
+    },
+    "node": {
+      "url": "https://nodejs.org/dist/v24.13.0/node-v24.13.0-linux-x64.tar.gz",
+      "sha256": "6223aad1a81f9d1e7b682c59d12e2de233f7b4c37475cd40d1c89c42b737ffa8",
+      "version": "24.13.0",
+      "format": "tar",
+      "binary": "node-v24.13.0-linux-x64/bin/node"
+    }
+  },
+  "linux-arm64": {
+    "codex": {
+      "url": "https://github.com/openai/codex/releases/download/rust-v0.153.2/codex-package-aarch64-unknown-linux-musl.tar.gz",
+      "sha256": "a3bfaf4b62fcb17e0a0338dfe0502413ddce0ab1b39028679390539c45d2c6e3",
+      "version": "0.153.2",
+      "format": "tar",
+      "binary": "bin/codex"
+    },
+    "codex-auth": {
+      "url": "https://registry.npmjs.org/@loongphy/codex-auth-linux-arm64/-/codex-auth-linux-arm64-0.3.0.tgz",
+      "sha512": "2114a0b68499450903f38a1181223f0865dbb1db8ff4dac37a6600c073d94b42b7632b08506379a15bd154fa0fd92640a05dd15439909fc4c20807ded7ca25f5",
+      "version": "0.3.0",
+      "format": "tar",
+      "binary": "package/bin/codex-auth"
+    },
+    "xray": {
+      "url": "https://github.com/XTLS/Xray-core/releases/download/v26.3.27/Xray-linux-arm64-v8a.zip",
+      "sha256": "4d30283ae614e3057f730f67cd088a42be6fdf91f8639d82cb69e48cde80413c",
+      "version": "26.3.27",
+      "format": "zip",
+      "binary": "xray"
+    },
+    "claude": {
+      "url": "https://downloads.claude.ai/claude-code-releases/2.1.84/linux-arm64/claude",
+      "sha256": "5c868174b44439e51c74ff084c306856c41779615250d5bbdaa5d10056362814",
+      "version": "2.1.84",
+      "format": "binary",
+      "binary": "claude"
+    },
+    "node": {
+      "url": "https://nodejs.org/dist/v24.13.0/node-v24.13.0-linux-arm64.tar.gz",
+      "sha256": "0f6d40b94c6a2eb6b4c240ffc8b9fd3ada7ab044c177dd413c06e1ef9a63f081",
+      "version": "24.13.0",
+      "format": "tar",
+      "binary": "node-v24.13.0-linux-arm64/bin/node"
+    }
+  },
+  "win32-x64": {
+    "codex": {
+      "url": "https://github.com/openai/codex/releases/download/rust-v0.153.2/codex-package-x86_64-pc-windows-msvc.tar.gz",
+      "sha256": "eaa00e30f3c1a2b5ca8263960f340a8e5d06fb705de09716f9a2bc42eceef437",
+      "version": "0.153.2",
+      "format": "tar",
+      "binary": "bin/codex.exe"
+    },
+    "codex-auth": {
+      "url": "https://registry.npmjs.org/@loongphy/codex-auth-win32-x64/-/codex-auth-win32-x64-0.3.0.tgz",
+      "sha512": "354c1f1dded47ac6e228e468980dc558320dce8fc93cda3f7791adfb2ba1d67dc9effce6e892da32d8e2f230cfad1738388e05462402bf9986d9eec6368534b2",
+      "version": "0.3.0",
+      "format": "tar",
+      "binary": "package/bin/codex-auth.exe"
+    },
+    "xray": {
+      "url": "https://github.com/XTLS/Xray-core/releases/download/v26.3.27/Xray-windows-64.zip",
+      "sha256": "d004c39288ce9ada487c6f398c7c545f7d749e44bdfdd59dbc9f865afba4e1ad",
+      "version": "26.3.27",
+      "format": "zip",
+      "binary": "xray.exe"
+    },
+    "claude": {
+      "url": "https://downloads.claude.ai/claude-code-releases/2.1.84/win32-x64/claude.exe",
+      "sha256": "64b28630ec4f4aaa6cc0e225379cf59cdb95828cbb4ce700a0ae4401b1999ecd",
+      "version": "2.1.84",
+      "format": "binary",
+      "binary": "claude.exe"
+    },
+    "node": {
+      "url": "https://nodejs.org/dist/v24.13.0/node-v24.13.0-win-x64.zip",
+      "sha256": "ca2742695be8de44027d71b3f53a4bdb36009b95575fe1ae6f7f0b5ce091cb88",
+      "version": "24.13.0",
+      "format": "zip",
+      "binary": "node-v24.13.0-win-x64/node.exe"
+    }
+  },
+  "win32-arm64": {
+    "codex": {
+      "url": "https://github.com/openai/codex/releases/download/rust-v0.153.2/codex-package-aarch64-pc-windows-msvc.tar.gz",
+      "sha256": "a1958a6e01f1be57427d16988c4949eadb02112a8dba1ca2fbbb37eb7517c395",
+      "version": "0.153.2",
+      "format": "tar",
+      "binary": "bin/codex.exe"
+    },
+    "codex-auth": {
+      "url": "https://registry.npmjs.org/@loongphy/codex-auth-win32-arm64/-/codex-auth-win32-arm64-0.3.0.tgz",
+      "sha512": "806ef391d315cb9b6e9b9e0737fe0440676777861394817ed3a76e70069209e9741168106a974646f00e87a6370fcdec5043dd9b0b9eb93d76b97727a1b3dd30",
+      "version": "0.3.0",
+      "format": "tar",
+      "binary": "package/bin/codex-auth.exe"
+    },
+    "xray": {
+      "url": "https://github.com/XTLS/Xray-core/releases/download/v26.3.27/Xray-windows-arm64-v8a.zip",
+      "sha256": "35d4ed6ec21224fb22b07c2c3f672e2350cd536f2c74d309150175a76365ea88",
+      "version": "26.3.27",
+      "format": "zip",
+      "binary": "xray.exe"
+    },
+    "claude": {
+      "url": "https://downloads.claude.ai/claude-code-releases/2.1.84/win32-arm64/claude.exe",
+      "sha256": "e7f5d18d470f0345ee18bb368f8ea7d43e791e17f0de7b69cdc40e42a9a9398e",
+      "version": "2.1.84",
+      "format": "binary",
+      "binary": "claude.exe"
+    },
+    "node": {
+      "url": "https://nodejs.org/dist/v24.13.0/node-v24.13.0-win-arm64.zip",
+      "sha256": "92b9f9b0c0c123e11e4afc535f0ec19cd987465eea506427553a49971364158a",
+      "version": "24.13.0",
+      "format": "zip",
+      "binary": "node-v24.13.0-win-arm64/node.exe"
+    }
+  }
+}

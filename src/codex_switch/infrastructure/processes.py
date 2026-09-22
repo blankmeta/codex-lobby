@@ -1,6 +1,8 @@
 import os
 import shutil
 import subprocess
+import sys
+from pathlib import Path
 
 from codex_switch.domain.errors import SwitchError
 
@@ -14,14 +16,34 @@ def connection_environment(proxy: str | None, base: dict | None = None) -> dict:
             env[key] = env[key.lower()] = proxy
         env["NO_PROXY"] = env["no_proxy"] = "127.0.0.1,localhost,::1,*.local"
         env["NODE_USE_ENV_PROXY"] = "1"
+    from .tools import NativeTools
+    node = NativeTools().installed("node")
+    if node:
+        env["CODEX_AUTH_NODE_EXECUTABLE"] = node
+        env["PATH"] = str(Path(node).parent) + os.pathsep + env.get("PATH", "")
     return env
 
 
 def require_binary(name: str) -> str:
-    binary = shutil.which(name)
+    override = os.environ.get("CODEX_LOBBY_" + name.upper().replace("-", "_") + "_BINARY")
+    if override:
+        return str(Path(override).expanduser().resolve())
+    # Release bundles keep native dependencies alongside the launcher. Native
+    # binaries preserve inherited profile locks; npm shell shims need not do so.
+    root = Path(sys.executable).parent if getattr(sys, "frozen", False) else None
+    candidates = [root / "tools" / (name + (".exe" if os.name == "nt" else ""))] if root else []
+    from .tools import NativeTools
+    binary = next((str(p) for p in candidates if p.is_file()), None) or NativeTools().installed(name) or shutil.which(name)
+    if not binary and name == "claude":
+        candidate = Path.home() / ".local/bin" / ("claude.exe" if os.name == "nt" else "claude")
+        binary = str(candidate) if candidate.is_file() else None
     if not binary:
-        raise SwitchError(f"Не найден {name}. Переустанови: brew reinstall blankmeta/tap/codex-switch")
+        raise SwitchError(f"{name} is not installed. Open Settings → Install tools, then try again.")
     return binary
+
+
+def command_for(binary, *args):
+    return ([sys.executable, str(binary)] if str(binary).endswith(".py") else [str(binary)]) + list(args)
 
 
 class CodexProcess:
@@ -30,7 +52,7 @@ class CodexProcess:
 
     def run(self, args: list[str], *, proxy: str | None = None) -> int:
         try:
-            result = self.runner([require_binary("codex"), *args], env=connection_environment(proxy))
+            result = self.runner(command_for(require_binary("codex"), *args), env=connection_environment(proxy))
             return result.returncode
         except KeyboardInterrupt:
             return 130
@@ -38,7 +60,13 @@ class CodexProcess:
 
 class ProcessDiagnostics:
     def dependencies(self) -> dict[str, str]:
-        return {name: require_binary(name) for name in ("codex", "codex-auth", "xray", "node")}
+        found = {}
+        for name in ("codex", "codex-auth", "claude", "xray"):
+            try:
+                found[name] = require_binary(name)
+            except SwitchError:
+                found[name] = "Not installed (optional until used)"
+        return found
 
 
 def profile_environment(home, proxy: str | None, base: dict | None = None) -> dict:

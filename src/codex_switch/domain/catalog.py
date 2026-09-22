@@ -17,6 +17,10 @@ class AccountEntry:
         return self.profile is None
 
     @property
+    def provider(self) -> str:
+        return self.profile.provider if self.profile else "codex"
+
+    @property
     def running(self) -> bool:
         return bool(self.profile and self.profile.running)
 

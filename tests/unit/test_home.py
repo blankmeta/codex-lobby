@@ -11,6 +11,7 @@ from codex_switch.presentation.home import HomeMenu
 from codex_switch.presentation.menu import Option, TerminalMenu, frame
 from codex_switch.presentation.usage import remaining
 from .fakes import application
+from codex_switch.domain.providers import CODEX, CLAUDE
 from .test_domain import LINK
 
 
@@ -37,6 +38,8 @@ class HomeTests(unittest.TestCase):
         account = Account("managed-work", "Work", "work@example.com", "plus", primary=UsageWindow(20, 300))
         self.work = ProfileStatus("work", account)
         app.profiles.names.return_value = ["work"]
+        app.profiles.provider_choices.return_value = [CODEX, CLAUDE]
+        app.profiles.resume_arguments.return_value = ["resume"]
         app.profiles.inspect.return_value = self.work
         app.profiles.run.return_value = 0
         app.projects.bound.return_value = "work"
@@ -94,7 +97,7 @@ class HomeTests(unittest.TestCase):
         app.profiles.run.assert_called_once()
 
     def test_duplicate_sign_in_selects_existing_account_without_creating_another(self):
-        home, app, _, _ = self.make_home("add", "ENTER")
+        home, app, _, _ = self.make_home("add", "codex", "ENTER")
         app.profiles.login.side_effect = AccountAlreadyAdded("work")
         self.assertEqual(home.run(), 0)
         app.profiles.login.assert_called_once()
