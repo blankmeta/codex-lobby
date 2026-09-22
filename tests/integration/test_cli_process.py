@@ -34,7 +34,7 @@ Path({str(directory / 'args.json')!r}).write_text(json.dumps(sys.argv[1:]))
 sys.exit(7)
 ''')
             codex.chmod(0o755)
-            env = {**os.environ, "CODEX_LOBBY_CODEX_BINARY": str(codex), "CODEX_LOBBY_CODEX_AUTH_BINARY": str(auth), "PATH": str(binaries) + os.pathsep + os.environ["PATH"], "PYTHONPATH": str(root / "src"),
+            env = {**os.environ, "RUNLOBBY_CODEX_BINARY": str(codex), "RUNLOBBY_CODEX_AUTH_BINARY": str(auth), "PATH": str(binaries) + os.pathsep + os.environ["PATH"], "PYTHONPATH": str(root / "src"),
                    "CODEX_SWITCH_HOME": str(directory / "app"), "CODEX_SWITCH_LANG": "en"}
             result = subprocess.run([sys.executable, "-m", "codex_switch", "--", "exec", "an argument with spaces"],
                                     input="2\n", capture_output=True, text=True, env=env, timeout=10)
@@ -74,7 +74,7 @@ else:
  sys.exit(7)
 ''')
             codex.chmod(0o755)
-            env = {**os.environ, "CODEX_LOBBY_CODEX_BINARY": str(codex), "CODEX_LOBBY_CODEX_AUTH_BINARY": str(auth), "PATH": str(binaries) + os.pathsep + os.environ["PATH"], "PYTHONPATH": str(root / "src"),
+            env = {**os.environ, "RUNLOBBY_CODEX_BINARY": str(codex), "RUNLOBBY_CODEX_AUTH_BINARY": str(auth), "PATH": str(binaries) + os.pathsep + os.environ["PATH"], "PYTHONPATH": str(root / "src"),
                    "CODEX_SWITCH_HOME": str(directory / "app"), "CODEX_HOME": str(original), "CODEX_SWITCH_LANG": "en"}
             def run(*args, input=None):
                 return subprocess.run([sys.executable, "-m", "codex_switch", *args], input=input,

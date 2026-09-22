@@ -15,7 +15,7 @@ def main(args=None):
         cli = CLI(app, console)
         if not args:
             app.connection()
-            console.say("✓ Connection ready. Launch: codex-lobby", "✓ Подключение готово. Запустить: codex-lobby")
+            console.say("✓ Connection ready. Launch: runlobby", "✓ Подключение готово. Запустить: runlobby")
             return 0
         if args[0] == "--run":
             forwarded = args[1:]
@@ -29,7 +29,7 @@ def main(args=None):
             for i, server in enumerate(app.servers.list(), 1):
                 console.write(f"{i}. {server.name} · {server.transport} / {server.security}")
             return 0
-        raise SwitchError("Используй codex-lobby setup, accounts, login, doctor или stop. Старые настройки сохранены.")
+        raise SwitchError("Используй runlobby setup, accounts, login, doctor или stop. Старые настройки сохранены.")
     except SwitchError as exc:
         print(str(exc), file=sys.stderr)
         return 1

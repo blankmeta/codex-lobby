@@ -26,4 +26,4 @@ def current_platform():
         from .posix import PosixLocks, PosixTerminal
         paths = MacPaths() if sys.platform == "darwin" else LinuxPaths()
         return Platform(paths, PosixLocks(), PosixTerminal(), PosixProcessControl())
-    raise SwitchError("Codex Lobby supports Windows, macOS and Linux.")
+    raise SwitchError("RunLobby supports Windows, macOS and Linux.")

@@ -39,15 +39,15 @@ class CodexAuth:
         try:
             data = json.loads(result.stdout)
         except (ValueError, TypeError):
-            raise SwitchError("Нужен codex-auth 0.3.0 с JSON-интерфейсом. Запусти brew upgrade blankmeta/tap/codex-lobby.") from None
+            raise SwitchError("Нужен codex-auth 0.3.0 с JSON-интерфейсом. Запусти brew upgrade blankmeta/tap/runlobby.") from None
         if not isinstance(data, dict) or data.get("schema_version") != 1:
-            raise SwitchError("Версия codex-auth несовместима. Обнови Codex Lobby.")
+            raise SwitchError("Версия codex-auth несовместима. Обнови RunLobby.")
         if result.returncode or data.get("error"):
             code = (data.get("error") or {}).get("code")
-            message = {"account_not_found": "Аккаунт не найден. Обнови список: codex-lobby accounts",
+            message = {"account_not_found": "Аккаунт не найден. Обнови список: runlobby accounts",
                        "ambiguous_query": "Не удалось однозначно выбрать аккаунт. Обнови список.",
-                       "state_uncertain": "Состояние аккаунта не подтверждено. Выполни codex-lobby accounts перед повтором."}
-            raise SwitchError(message.get(code, "Не удалось выполнить действие с аккаунтом. Проверь: codex-lobby accounts"))
+                       "state_uncertain": "Состояние аккаунта не подтверждено. Выполни runlobby accounts перед повтором."}
+            raise SwitchError(message.get(code, "Не удалось выполнить действие с аккаунтом. Проверь: runlobby accounts"))
         return data
 
     def list(self, *, refresh: bool = False, proxy: str | None = None) -> list[Account]:
@@ -63,7 +63,7 @@ class CodexAuth:
         try:
             return [decode_account(row) for row in data["accounts"]]
         except (KeyError, TypeError, ValueError):
-            raise SwitchError("Не удалось прочитать список аккаунтов. Обнови Codex Lobby.") from None
+            raise SwitchError("Не удалось прочитать список аккаунтов. Обнови RunLobby.") from None
 
     def switch(self, key: str, *, proxy: str | None = None) -> None:
         result = self._json(["switch", key], proxy)
@@ -73,4 +73,4 @@ class CodexAuth:
     def login(self, *, proxy: str | None = None) -> None:
         result = self.runner(command_for(self.command(), "login"), env=self.environment(proxy))
         if result.returncode:
-            raise SwitchError("Вход не завершён. Повтори: codex-lobby login")
+            raise SwitchError("Вход не завершён. Повтори: runlobby login")

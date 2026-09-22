@@ -98,9 +98,9 @@ class HomeMenu:
 
     def list_accounts(self, *, refresh=False):
         entries = self.snapshot(refresh=refresh)
-        self.c.say("Your ChatGPT accounts", "Твои аккаунты ChatGPT")
+        self.c.say("Your accounts", "Твои аккаунты")
         if not entries:
-            self.c.say("No accounts yet. Run codex-lobby to add one.", "Аккаунтов пока нет. Запусти codex-lobby, чтобы добавить.")
+            self.c.say("No accounts yet. Run runlobby to add one.", "Аккаунтов пока нет. Запусти runlobby, чтобы добавить.")
         for option in self.options(entries, self.app.projects.bound())[:len(entries)]:
             self.c.write(clean(option.label))
             for line in option.details[:3]:
@@ -129,7 +129,7 @@ class HomeMenu:
                 options = self.options(entries, bound)
                 if missing:
                     options.insert(0, Option("missing", c.text("Project account is unavailable · choose another", "Аккаунт проекта недоступен · выбрать другой")))
-                key = self.menu.choose("Codex Lobby", options, "missing" if missing else self.default(entries, bound), context)
+                key = self.menu.choose("RunLobby", options, "missing" if missing else self.default(entries, bound), context)
                 self.notice = ""
                 if key in (None, "quit"):
                     return 0

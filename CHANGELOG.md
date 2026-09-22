@@ -1,16 +1,16 @@
 # Changelog
 
-## 2.0.1
+## 1.4.0
 
-- Verify Windows installer checksum downloads from a file, independent of the HTTP content type, and test installation with Windows PowerShell 5.1.
+Continues the 1.x release series after 1.3.0 and supersedes the release numbered 2.0.1.
 
-## 2.0.0
-
-- Rename to Codex Lobby, with `cxl` as the short command. Preserve `codex-switch`, `codex-vpn`, existing profiles and project preferences.
+- Rename to RunLobby, with `rlb` as the short command. Preserve `codex-lobby`, `cxl`, `codex-switch`, `codex-vpn`, existing account paths and project preferences.
 - Add isolated Claude subscription accounts beside Codex accounts. Select a provider only when adding an account; launch and resume from the common menu.
 - Preserve Claude credential paths and session history during verified reauthentication. Read usage from the documented status-line interface; never copy refresh tokens.
 - Add platform ports and native Windows, macOS and Linux implementations for console input, inherited process locks, paths and proxy lifecycle.
 - Ship standalone installers and verify native dependencies against pinned checksums. Install missing tools from the account flow.
+- Verify Windows installer checksum downloads from a file, independent of the HTTP content type, and test installation with Windows PowerShell 5.1 and 7.
+- Simplify the English and Russian READMEs around installation, browser sign-in and account selection. Enlarge the menu preview text.
 - Exercise the same account scenarios on Python 3.11/3.13 across Windows, macOS and Linux, with native CLI compatibility, Win32 console events, POSIX PTYs and a local VLESS tunnel.
 
 Browser OAuth is still performed by the provider CLI. Automated tests use synthetic credentials and do not send model requests.
@@ -36,7 +36,7 @@ One running Codex process per added account remains the supported limit. Browser
 - Keep live profiles on cached usage; serialize sign-in and refresh with launches.
 - Stage reauthentication before replacing credentials. Reject a different account or a duplicate managed identity.
 - Add versioned JSON status and an email-free status line for terminal integrations.
-- Preserve original accounts and history through `codex-lobby legacy`.
+- Preserve original accounts and history through `runlobby legacy`.
 
 New managed profiles require their own sign-in and start with separate history/configuration. Existing profiles are not migrated automatically. Desktop/IDE integration, same-profile parallel processes, and cross-account history merging are not included.
 

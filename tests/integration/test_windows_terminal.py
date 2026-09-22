@@ -50,8 +50,8 @@ before=modes()
 thread=threading.Thread(target=keys);thread.start()
 picker=TerminalMenu(Console(terminal=WindowsTerminal()))
 options=[Option('codex','Codex'),Option('claude','Claude')]
-first=picker.choose('Codex Lobby',options)
-second=picker.choose('Codex Lobby',options)
+first=picker.choose('RunLobby',options)
+second=picker.choose('RunLobby',options)
 thread.join()
 Path(sys.argv[1]).write_text(json.dumps({'first':first,'second':second,'restored':modes()==before}))
 '''

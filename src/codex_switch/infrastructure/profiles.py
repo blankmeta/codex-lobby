@@ -39,7 +39,7 @@ def profile_lock(path: Path, locks=None):
 
 def cached_account(data) -> Account:
     if not isinstance(data, dict):
-        raise SwitchError("Invalid profile metadata. Sign in again with codex-lobby login <name>.")
+        raise SwitchError("Invalid profile metadata. Sign in again with runlobby login <name>.")
     try:
         values = dict(data)
         for key in ("primary", "secondary"):
@@ -112,7 +112,7 @@ class LocalProfiles:
     def _saved(self, name: str) -> Account:
         data = read_json(self.home(name) / "profile.json", None)
         if not data or not isinstance(data, dict) or data.get("schema_version") != 1:
-            raise SwitchError(f"Profile '{name}' is unavailable. Run codex-lobby login {name}.")
+            raise SwitchError(f"Profile '{name}' is unavailable. Run runlobby login {name}.")
         return cached_account(data.get("account"))
 
     def _save(self, home: Path, account: Account) -> None:
@@ -159,7 +159,7 @@ class LocalProfiles:
         provider = self.provider(name)
         current = provider.current(self.runtime_home(name), refresh=refresh, proxy=proxy)
         if saved.key != current.key:
-            raise SwitchError("Profile identity changed outside Codex Lobby. Sign in to the original account again.")
+            raise SwitchError("Profile identity changed outside RunLobby. Sign in to the original account again.")
         self._save(self.home(name), current)
         return ProfileStatus(name, current, label=self._label(name), provider=provider.info.id)
 

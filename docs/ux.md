@@ -4,7 +4,7 @@ The main screen is an account list. Every row shows a human name, Codex or Claud
 
 | Intent | Journey |
 | --- | --- |
-| Start work | `cxl` → choose an account → Enter |
+| Start work | `rlb` → choose an account → Enter |
 | Add an account | Add account → ChatGPT or Claude → sign in in the browser |
 | Continue work | Continue a saved session → choose account → native session picker |
 | Rename or remember an account | Select account → Right → Rename / Use for this project |

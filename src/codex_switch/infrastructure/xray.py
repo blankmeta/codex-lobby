@@ -101,7 +101,7 @@ class XrayProxy:
                     new = server.outbound
                     if equivalent_outbound(old, new):
                         return self.status()
-                raise SwitchError("Другой прокси уже работает. Заверши его сессии, выполни codex-lobby stop и попробуй снова.")
+                raise SwitchError("Другой прокси уже работает. Заверши его сессии, выполни runlobby stop и попробуй снова.")
             self.validate(server)
             with socket.socket() as sock:
                 try:
@@ -154,7 +154,7 @@ class XrayProxy:
                     break
                 time.sleep(0.1)
             else:
-                raise SwitchError("Xray ещё завершается. Повтори codex-lobby stop через несколько секунд.")
+                raise SwitchError("Xray ещё завершается. Повтори runlobby stop через несколько секунд.")
             if state["legacy"]:
                 (self.legacy / "xray.pid").unlink(missing_ok=True)
             else:

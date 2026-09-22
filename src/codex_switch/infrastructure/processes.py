@@ -24,8 +24,13 @@ def connection_environment(proxy: str | None, base: dict | None = None) -> dict:
     return env
 
 
+def binary_override(name: str) -> str | None:
+    suffix = name.upper().replace("-", "_") + "_BINARY"
+    return os.environ.get("RUNLOBBY_" + suffix) or os.environ.get("CODEX_LOBBY_" + suffix)
+
+
 def require_binary(name: str) -> str:
-    override = os.environ.get("CODEX_LOBBY_" + name.upper().replace("-", "_") + "_BINARY")
+    override = binary_override(name)
     if override:
         return str(Path(override).expanduser().resolve())
     # Release bundles keep native dependencies alongside the launcher. Native

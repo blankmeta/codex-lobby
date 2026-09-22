@@ -1,77 +1,96 @@
 <p align="center">
-  <img src="docs/assets/hero-28cb37e7.svg" alt="Codex Lobby: Your accounts. Your limits. One place." width="100%">
+  <img src="docs/assets/hero-4edf5ce8.svg" alt="RunLobby: Your accounts. Your limits. One place." width="100%">
 </p>
 
 <p align="center">
-  <a href="https://github.com/blankmeta/codex-lobby/actions/workflows/tests.yml"><img src="https://github.com/blankmeta/codex-lobby/actions/workflows/tests.yml/badge.svg" alt="Tests"></a>
-  <a href="https://github.com/blankmeta/codex-lobby/tags"><img src="https://img.shields.io/github/v/tag/blankmeta/codex-lobby?label=version&amp;color=8fbd79&amp;labelColor=20372a" alt="Latest version"></a>
-  <a href="https://github.com/blankmeta/homebrew-tap"><img src="https://img.shields.io/badge/Homebrew-one_command-d7b66a?logo=homebrew&amp;logoColor=white&amp;labelColor=20372a" alt="Install with Homebrew"></a>
-  <img src="https://img.shields.io/badge/Windows_%C2%B7_macOS_%C2%B7_Linux-a2bca5?labelColor=20372a" alt="Windows, macOS and Linux">
+  Use your <strong>Codex and Claude accounts</strong> side by side.<br>
+  Check remaining limits and continue work with the account you choose.
 </p>
 
 <p align="center">
-  Your Codex and Claude accounts, remaining limits, and sessions in one terminal menu.
+  <a href="https://github.com/blankmeta/runlobby/releases/latest"><img src="https://img.shields.io/github/v/release/blankmeta/runlobby?sort=date&amp;label=version&amp;color=8fbd79&amp;labelColor=20372a" alt="Latest release"></a>
+  <a href="https://github.com/blankmeta/runlobby/actions/workflows/tests.yml"><img src="https://github.com/blankmeta/runlobby/actions/workflows/tests.yml/badge.svg" alt="Tests"></a>
+  <a href="docs/install.md"><img src="https://img.shields.io/badge/Windows_%C2%B7_macOS_%C2%B7_Linux-a2bca5?labelColor=20372a" alt="Windows, macOS and Linux"></a>
 </p>
 
 <p align="center">
-  <a href="docs/usage.md">Documentation</a> ·
-  <a href="docs/architecture.md">Architecture & tests</a> ·
-  <a href="docs/README.ru.md">Русский</a>
+  <a href="#get-started">Get started</a> · <a href="docs/usage.md">Guide</a> · <a href="docs/README.ru.md">Русский</a>
 </p>
 
-## Install & run
+<p align="center">
+  <img src="docs/assets/accounts-e5f31dad.svg" alt="RunLobby menu with Personal in Claude and Work in Codex. Work is selected for this project, with 92% of its five-hour limit remaining." width="960">
+  <br><sub>Menu preview with example accounts. Percentages show remaining limits.</sub>
+</p>
 
-**macOS**
+## Get started
+
+**1. Install for your system**
+
+macOS · Homebrew
 
 ```sh
-brew install blankmeta/tap/codex-lobby
+brew install blankmeta/tap/runlobby
 ```
 
-**Linux**
+Linux
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/blankmeta/codex-lobby/main/install.sh | sh
+curl -fsSL https://raw.githubusercontent.com/blankmeta/runlobby/main/install.sh | sh
 ```
 
-**Windows · PowerShell**
+Windows · PowerShell
 
 ```powershell
-irm https://raw.githubusercontent.com/blankmeta/codex-lobby/main/install.ps1 | iex
+irm https://raw.githubusercontent.com/blankmeta/runlobby/main/install.ps1 | iex
 ```
 
-Then run **`cxl`**. Choose **Add account → ChatGPT or Claude**, and sign in in your browser. Missing tools install automatically. No profile names or configuration files to fill in.
+[System requirements, updates & other installation options →](docs/install.md)
 
-Next time: choose an account with **↑↓**, press **Enter**. **→** opens account actions. [Installation details](docs/install.md)
+**2. Open RunLobby and sign in**
 
-<p align="center">
-  <img src="docs/assets/accounts-ba1c468a.svg" alt="Account menu: Work is selected for this project with 92% of its five-hour limit left. Personal uses Claude. Add accounts, continue work, refresh limits and settings are available below." width="100%">
-  <br><sub>CLI preview with synthetic accounts.</sub>
-</p>
+```sh
+rlb
+```
 
-## Your accounts, ready to work
+Choose **Add account → ChatGPT or Claude**, then sign in in your browser. RunLobby installs missing tools for the provider you choose.
 
-| What you need | Where to find it |
+Next time, select an account with **↑↓** and press **Enter** to start. Press **→** for account actions or **Esc** to go back.
+
+## Work with your accounts
+
+| You want to… | In RunLobby |
 | :--- | :--- |
-| **Work and personal side by side** | Separate sign-in and history for each added account |
-| **The right account for a project** | Settings → Account for this project; then Enter to launch |
-| **See what remains** | Five-hour and weekly limits, reset times, and data age |
-| **Pick up your work** | Continue a saved session |
-| **Connect with VLESS** | Settings → Connection → paste your link |
+| **Keep work and personal separate** | Add both accounts, each with its own sign-in and session history |
+| **Use an account for a project** | Select it, press **→**, choose **Use for this project** |
+| **Pick up a conversation** | **Continue a saved session** → choose an account |
+| **Connect through a proxy** | **Settings → Connection** → paste a VLESS link |
 
-Different accounts run concurrently; one agent process runs per added account. Original accounts stay in the same list with their original history. [Accounts & migration →](docs/profiles.md)
+See remaining five-hour and weekly limits beside each account, with reset times and the age of the data below. **Refresh limits** updates Codex; Claude supplies snapshots while you use it. Unknown values appear as `—`. [About limits →](docs/usage.md#usage-limits)
 
-Limits show saved data with its age. **Refresh limits** updates Codex; Claude reports limits while you use it. Unknown values stay `—`. Accounts never rotate automatically.
+For proxy access before your first sign-in, choose **Set up connection / paste VLESS** on the opening screen.
 
-**Need a proxy before sign-in?** Choose connection setup on the first screen, or run `codex-lobby setup`. Paste a VLESS link; the app checks it and connects. Proxy use is optional.
+<details>
+<summary>Existing accounts, sessions & compatibility</summary>
 
-[Menu & commands](docs/usage.md) · [JSON & terminal integrations](docs/integrations.md) · [Changelog](CHANGELOG.md)
+Your Codex Switch and Codex Lobby accounts stay in the list with their history. The previous commands, including `cxl`, still work. Use `rlb` for RunLobby.
+
+Run different added accounts in separate terminals; one agent process runs per added account. Choose accounts yourself, with no automatic rotation.
+
+[Accounts & migration](docs/profiles.md) · [Commands & JSON](docs/integrations.md)
+
+</details>
+
+<details>
+<summary>Architecture & adding providers</summary>
+
+Codex and Claude share a provider interface. To add another provider, implement its adapter and register it. Windows, macOS and Linux adapters handle terminal input, paths and process locks.
+
+[Architecture & tests](docs/architecture.md) · [Provider guide](docs/providers.md) · [Changelog](CHANGELOG.md)
+
+</details>
 
 ---
 
-<p align="center">
-  Built on <a href="https://github.com/Loongphy/codex-auth">codex-auth</a>,
-  <a href="https://github.com/openai/codex">Codex CLI</a>,
-  <a href="https://code.claude.com/docs">Claude Code</a>, and
-  <a href="https://github.com/XTLS/Xray-core">Xray-core</a>.<br>
-  <sub>Previously Codex Switch / codex-vpn. An independent project, unaffiliated with OpenAI or Anthropic. Dependencies retain their own licenses.</sub>
-</p>
+Built on [Codex CLI](https://github.com/openai/codex), [Claude Code](https://code.claude.com/docs), [codex-auth](https://github.com/Loongphy/codex-auth) and [Xray](https://github.com/XTLS/Xray-core).
+
+[MIT license](LICENSE). Independent project, unaffiliated with OpenAI or Anthropic. Dependencies retain their own licenses.

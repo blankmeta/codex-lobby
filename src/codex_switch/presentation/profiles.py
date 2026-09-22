@@ -52,17 +52,17 @@ class ProfileCLI:
                    "Войди в браузере. У этого аккаунта будет отдельная история сессий.")
         self.app.prepare_provider(provider or "codex")
         status = self.app.login_profile(name, **({"provider": provider} if provider else {}))
-        self.c.say(f"✓ Saved '{status.title}'. Start: codex-lobby", f"✓ Сохранён '{status.title}'. Запустить: codex-lobby")
+        self.c.say(f"✓ Saved '{status.title}'. Start: runlobby", f"✓ Сохранён '{status.title}'. Запустить: runlobby")
         return status.name
 
     def choose(self):
         profiles = self.app.profile_status()
         bound = self.app.projects.bound()
         if bound and bound not in [p.name for p in profiles]:
-            raise SwitchError("The project's profile is missing. Run codex-lobby unbind or sign in to that profile again.")
+            raise SwitchError("The project's profile is missing. Run runlobby unbind or sign in to that profile again.")
         self.c.show_profiles(profiles, bound)
         if not profiles:
-            raise SwitchError("No profiles yet. Add one: codex-lobby login personal")
+            raise SwitchError("No profiles yet. Add one: runlobby login personal")
         if len(profiles) == 1:
             return profiles[0].name
         default = next((i for i, p in enumerate(profiles, 1) if p.name == bound), 1)
@@ -86,7 +86,7 @@ class ProfileCLI:
                 provider = values[i + 1]
                 del values[i:i + 2]
             if len(values) > 1:
-                raise SwitchError("Usage: cxl login [name] [--provider codex|claude]")
+                raise SwitchError("Usage: rlb login [name] [--provider codex|claude]")
             if provider is None and not values:
                 from .home import HomeMenu
                 HomeMenu(self.app, self.c).sign_in()
@@ -95,7 +95,7 @@ class ProfileCLI:
             return 0
         if command in ("profiles", "status") or command == "accounts" and self.app.profiles.names():
             if any(arg not in ("--json", "--refresh", "--line") for arg in args[1:]):
-                raise SwitchError("Usage: codex-lobby profiles [--json] [--refresh]")
+                raise SwitchError("Usage: runlobby profiles [--json] [--refresh]")
             if "--json" in args and "--line" in args:
                 raise SwitchError("Choose --json or --line.")
             profiles = self.app.profile_status(refresh="--refresh" in args)
@@ -109,20 +109,20 @@ class ProfileCLI:
             return 0
         if command == "bind":
             if len(args) > 2:
-                raise SwitchError("Usage: codex-lobby bind [profile]")
+                raise SwitchError("Usage: runlobby bind [profile]")
             name = args[1] if len(args) == 2 else self.choose()
             self.app.bind_profile(name)
             self.c.say(f"✓ This project defaults to '{name}'.", f"✓ Для этого проекта выбран '{name}'.")
             return 0
         if command == "unbind":
             if len(args) != 1:
-                raise SwitchError("Usage: codex-lobby unbind")
+                raise SwitchError("Usage: runlobby unbind")
             self.app.projects.unbind()
             self.c.say("✓ Project preference removed. Profiles and sessions were kept.", "✓ Привязка снята. Профили и сессии сохранены.")
             return 0
         if command == "run":
             if len(args) < 2:
-                raise SwitchError("Usage: codex-lobby run <profile> [-- <Codex arguments>]")
+                raise SwitchError("Usage: runlobby run <profile> [-- <provider arguments>]")
             forwarded = args[2:]
             if forwarded[:1] == ["--"]:
                 forwarded = forwarded[1:]

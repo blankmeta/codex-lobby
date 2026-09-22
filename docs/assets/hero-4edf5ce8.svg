@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="176" viewBox="0 0 1280 176" role="img" aria-labelledby="title desc">
+  <title id="title">RunLobby</title>
+  <desc id="desc">Your accounts. Your limits. One place.</desc>
+  <rect width="1280" height="176" rx="8" fill="#181b19"/>
+  <g font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif">
+    <text x="44" y="81" fill="#f2f3ef" font-size="46" font-weight="600" letter-spacing="-1.5">RunLobby</text>
+    <text x="46" y="123" fill="#a6aea7" font-size="23">Your accounts. Your limits. One place.</text>
+  </g>
+  <g transform="translate(1160 58)" fill="none" stroke="#aec89f" stroke-width="3" stroke-linecap="square" stroke-linejoin="miter">
+    <path d="M0 12H60L48 0M60 12L48 24"/>
+    <path d="M60 48H0L12 36M0 48L12 60"/>
+  </g>
+</svg>

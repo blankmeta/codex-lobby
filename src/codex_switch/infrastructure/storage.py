@@ -51,7 +51,7 @@ class JsonServers:
             try:
                 return [parse_vless(row["raw_url"]) for row in legacy]
             except (TypeError, KeyError, SwitchError):
-                raise SwitchError("Старая VLESS-ссылка требует повторного импорта: codex-lobby setup. Исходный файл сохранён.") from None
+                raise SwitchError("Старая VLESS-ссылка требует повторного импорта: runlobby setup. Исходный файл сохранён.") from None
         try:
             return [Server(**row) for row in (data or [])]
         except (TypeError, KeyError):

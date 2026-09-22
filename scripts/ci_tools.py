@@ -11,7 +11,7 @@ if os.name == "nt":
     subprocess.run([installed["git-bash"], "--version"], check=True)
 with open(os.environ["GITHUB_ENV"], "a", encoding="utf-8") as env:
     for key, tool in [("CODEX_SWITCH_TEST_AUTH_BINARY", "codex-auth"), ("CODEX_SWITCH_TEST_CODEX_BINARY", "codex"),
-                      ("CODEX_LOBBY_TEST_CLAUDE_BINARY", "claude"), ("CODEX_AUTH_NODE_EXECUTABLE", "node")]:
+                      ("RUNLOBBY_TEST_CLAUDE_BINARY", "claude"), ("CODEX_AUTH_NODE_EXECUTABLE", "node")]:
         env.write(f"{key}={installed[tool]}\n")
 with open(os.environ["GITHUB_PATH"], "a", encoding="utf-8") as paths:
     for binary in installed.values():

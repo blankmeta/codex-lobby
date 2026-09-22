@@ -7,38 +7,39 @@ from .home import HomeMenu
 from .connection import ConnectionMenu
 
 
-HELP = """Codex Lobby — Your accounts. Your limits. One place.
+HELP = """RunLobby — Your accounts. Your limits. One place.
 
-  cxl                             Open accounts, limits and settings
-  codex-lobby                     Same menu; full command name
-  codex-lobby resume              Choose an account and continue a session
-  codex-lobby setup               Set up an optional VLESS connection
-  codex-lobby --help-all          Show commands for scripts and integrations
+  rlb                                Open accounts, limits and settings
+  runlobby                           Same menu; full command name
+  rlb resume                         Choose an account and continue a session
+  rlb setup                          Set up an optional VLESS connection
+  rlb --help-all                     Show commands for scripts and integrations
 
-Add accounts, choose a project default, rename accounts and change language
+Add ChatGPT or Claude accounts, choose a project default and change language
 from the menu. Use arrows and Enter; Esc goes back.
 """
 
-HELP_ALL = """Codex Lobby — commands for scripts and integrations.
+HELP_ALL = """RunLobby — commands for scripts and integrations.
 
-  codex-lobby                     Choose an account and launch Codex
-  codex-lobby setup               Set up your connection
-  codex-lobby login [name]        Sign in to an isolated account profile
-  codex-lobby run <name>          Launch an isolated profile
-  codex-lobby bind [name]         Remember a profile for this project
-  codex-lobby unbind              Remove this project preference
-  codex-lobby profiles            Show profiles and usage snapshots
-  codex-lobby status --json       Machine-readable profile status
-  codex-lobby legacy [command]    Use original accounts and shared history
-  codex-lobby accounts            Show accounts and saved usage limits
-  codex-lobby accounts --refresh  Refresh usage limits from OpenAI
-  codex-lobby switch              Switch the account without launching Codex
-  codex-lobby stop                Stop this app's proxy
-  codex-lobby doctor              Check dependencies and connection
-  codex-lobby resume              Choose an account and resume Codex
-  codex-lobby -- <arguments>      Pass arguments to Codex
+  rlb                                Choose an account and launch its provider
+  rlb setup                          Set up your connection
+  rlb login [name]                   Sign in to an isolated account
+  rlb login [name] --provider claude Add a Claude account
+  rlb run <name>                     Launch an isolated account
+  rlb bind [name]                    Remember an account for this project
+  rlb unbind                         Remove this project preference
+  rlb profiles                       Show profiles and usage snapshots
+  rlb status --json                  Machine-readable profile status
+  rlb legacy [command]               Use original Codex accounts and shared history
+  rlb accounts                       Show accounts and saved limits
+  rlb accounts --refresh             Refresh Codex usage limits
+  rlb switch                         Choose the project account without launching
+  rlb stop                           Stop this app's proxy
+  rlb doctor                         Check dependencies and connection
+  rlb resume                         Choose an account and continue a session
+  rlb -- <arguments>                 Pass arguments to the selected provider
 
-  CODEX_SWITCH_LANG=ru codex-lobby  Русский интерфейс
+  RUNLOBBY_LANG=ru rlb  Русский интерфейс
 """
 
 
@@ -58,18 +59,18 @@ class CLI:
             c.write(HELP)
             return 0
         if command in ("--version", "-V"):
-            c.write(f"codex-lobby {__version__}")
+            c.write(f"runlobby {__version__}")
             return 0
         if command == "--help-all":
             c.write(HELP_ALL)
             return 0
         import os
         language = self.app.settings.load().language
-        if language and not (os.environ.get("CODEX_LOBBY_LANG") or os.environ.get("CODEX_SWITCH_LANG")):
+        if language and not any(os.environ.get(key) for key in ("RUNLOBBY_LANG", "CODEX_LOBBY_LANG", "CODEX_SWITCH_LANG")):
             c.ru = language == "ru"
         if command == "tools":
             if len(args) != 3 or args[1] != "install":
-                raise SwitchError("Usage: cxl tools install codex|claude")
+                raise SwitchError("Usage: rlb tools install codex|claude")
             self.app.prepare_provider(args[2])
             c.say("Tools are ready.", "Инструменты готовы.")
             return 0
@@ -98,7 +99,7 @@ class CLI:
         if self.app.profiles is not None and not legacy:
             if command == "accounts":
                 if any(arg != "--refresh" for arg in args[1:]):
-                    raise SwitchError("Usage: codex-lobby accounts [--refresh]")
+                    raise SwitchError("Usage: runlobby accounts [--refresh]")
                 return HomeMenu(self.app, c).list_accounts(refresh="--refresh" in args)
             if command not in ("login", "run", "bind", "unbind", "profiles", "status", "accounts"):
                 forwarded = args[1:] if command in ("--", "resume") else [] if command == "switch" else args
@@ -111,7 +112,7 @@ class CLI:
             if accounts:
                 c.show_accounts(accounts)
             else:
-                c.say("No accounts yet. Add one: codex-lobby login", "Аккаунтов пока нет. Добавить: codex-lobby login")
+                c.say("No accounts yet. Add one: runlobby login", "Аккаунтов пока нет. Добавить: runlobby login")
             return 0
         if not self.app.settings.load().configured:
             c.say("Welcome! First, choose how Codex connects.", "Привет! Сначала выбери, как Codex будет подключаться.")
@@ -121,7 +122,7 @@ class CLI:
         if command == "login":
             c.say("Sign in to ChatGPT in the browser. Then return to this terminal.", "Войди в ChatGPT в браузере, затем вернись в этот терминал.")
             self.app.add_account()
-            c.say("✓ Account saved. Start with: codex-lobby", "✓ Аккаунт сохранён. Запустить: codex-lobby")
+            c.say("✓ Account saved. Start with: runlobby", "✓ Аккаунт сохранён. Запустить: runlobby")
             return 0
         accounts = self.app.list_accounts()
         if not accounts:
@@ -133,7 +134,7 @@ class CLI:
             self.app.add_account()
             accounts = self.app.list_accounts()
             if not accounts:
-                raise SwitchError(c.text("No saved account found. Try codex-lobby login.", "Аккаунт не сохранился. Повтори: codex-lobby login"))
+                raise SwitchError(c.text("No saved account found. Try runlobby login.", "Аккаунт не сохранился. Повтори: runlobby login"))
         key = c.pick_account(accounts)
         if command == "switch":
             self.app.select_account(key)

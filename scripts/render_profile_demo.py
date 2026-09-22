@@ -23,19 +23,19 @@ rows = [ProfileStatus("personal", Account("demo-personal", "Personal", "alex@exa
 home = HomeMenu(SimpleNamespace(provider_info=lambda name: CLAUDE if name == "claude" else CODEX), Console(language="en"))
 with patch("codex_switch.presentation.usage.time.time", return_value=now):
     options = home.options(account_catalog(rows, []), "work")
-    lines = frame("Codex Lobby", options, 1,
+    lines = frame("RunLobby", options, 1,
                   ("Project: payments-api", "Connection: normal", home.usage_heading()),
-                  width=106, height=30)
-height = 100 + len(lines) * 28
-parts = [f'<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="{height}" viewBox="0 0 1280 {height}" role="img" aria-labelledby="title desc">',
-         '<title id="title">Codex Lobby account menu</title>',
+                  width=82, height=30)
+height = 88 + len(lines) * 26
+parts = [f'<svg xmlns="http://www.w3.org/2000/svg" width="960" height="{height}" viewBox="0 0 960 {height}" role="img" aria-labelledby="title desc">',
+         '<title id="title">RunLobby account menu</title>',
          '<desc id="desc">Work is selected for this project, with 92% of its five-hour limit and 84% of its weekly limit left. Personal uses Claude. Add accounts, resume work, refresh limits and settings are in the same menu. Synthetic accounts.</desc>',
-         f'<rect width="1280" height="{height}" rx="8" fill="#181b19"/>',
-         '<text x="38" y="34" fill="#7f8b82" font-family="Helvetica,Arial,sans-serif" font-size="14">$ cxl</text>',
-         '<path d="M0 50H1280" stroke="#30372f"/>']
+         f'<rect width="960" height="{height}" rx="8" fill="#181b19"/>',
+         '<text x="32" y="30" fill="#7f8b82" font-family="Helvetica,Arial,sans-serif" font-size="14">$ rlb</text>',
+         '<path d="M0 44H960" stroke="#30372f"/>']
 for i, line in enumerate(lines):
     color = '#aec89f' if line.startswith('›') or 'Enter:' in line else '#9aa69d' if 'Updated' in line or 'Resets' in line else '#e4e9e1'
-    parts.append(f'<text x="38" y="{86+i*28}" fill="{color}" font-family="SFMono-Regular,Consolas,monospace" font-size="16" xml:space="preserve">{escape(line)}</text>')
+    parts.append(f'<text x="32" y="{78+i*26}" fill="{color}" font-family="SFMono-Regular,Consolas,monospace" font-size="16" xml:space="preserve">{escape(line)}</text>')
 parts.append('</svg>\n')
 svg = '\n'.join(parts)
 name = 'accounts-' + hashlib.sha256(svg.encode()).hexdigest()[:8] + '.svg'

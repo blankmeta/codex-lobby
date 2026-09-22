@@ -86,11 +86,12 @@ class NativeTools:
         return str(path) if path.is_file() else None
 
     def ensure(self, names, *, proxy=None):
+        from .processes import binary_override
         for name in names:
             if name == "claude" and os.name == "nt":
                 if not self.installed("git-bash") and not system_git_bash():
                     self.install("git-bash", proxy=proxy)
-            if self.installed(name) or shutil.which(name) or os.environ.get("CODEX_LOBBY_" + name.upper().replace("-", "_") + "_BINARY"):
+            if self.installed(name) or shutil.which(name) or binary_override(name):
                 continue
             self.install(name, proxy=proxy)
 

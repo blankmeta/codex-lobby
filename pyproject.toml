@@ -3,8 +3,8 @@ requires = ["setuptools>=68"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "codex-lobby"
-version = "2.0.1"
+name = "runlobby"
+version = "1.4.0"
 description = "Codex and Claude accounts, usage limits and sessions in one terminal menu"
 requires-python = ">=3.11"
 license = {file = "LICENSE"}
@@ -12,6 +12,8 @@ readme = "README.md"
 dependencies = ["psutil>=7,<8"]
 
 [project.scripts]
+runlobby = "codex_switch.__main__:main"
+rlb = "codex_switch.__main__:main"
 codex-lobby = "codex_switch.__main__:main"
 cxl = "codex_switch.__main__:main"
 codex-switch = "codex_switch.__main__:main"

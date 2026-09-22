@@ -9,15 +9,15 @@ from codex_switch import __version__
 from codex_switch.infrastructure.tools import platform_key
 
 subprocess.run([sys.executable, "-m", "PyInstaller", "--noconfirm", "--clean", "--onedir",
-                "--name", "codex-lobby", "--collect-all", "codex_switch", "scripts/frozen_entry.py"], check=True)
-bundle = Path("dist/codex-lobby")
+                "--name", "runlobby", "--collect-all", "codex_switch", "scripts/frozen_entry.py"], check=True)
+bundle = Path("dist/runlobby")
 suffix = ".exe" if os.name == "nt" else ""
-for name in ("cxl", "codex-switch", "codex-vpn"):
-    shutil.copy2(bundle / ("codex-lobby" + suffix), bundle / (name + suffix))
+for name in ("rlb", "codex-lobby", "cxl", "codex-switch", "codex-vpn"):
+    shutil.copy2(bundle / ("runlobby" + suffix), bundle / (name + suffix))
 for name in ("LICENSE", "README.md"):
     shutil.copy2(name, bundle / name)
-archive_name = f"codex-lobby-{__version__}-{platform_key()}"
-archive = Path(shutil.make_archive(str(Path("dist") / archive_name), "zip" if os.name == "nt" else "gztar", "dist", "codex-lobby"))
+archive_name = f"runlobby-{__version__}-{platform_key()}"
+archive = Path(shutil.make_archive(str(Path("dist") / archive_name), "zip" if os.name == "nt" else "gztar", "dist", "runlobby"))
 archive.with_name(archive.name + ".sha256").write_text(hashlib.sha256(archive.read_bytes()).hexdigest() + "  " + archive.name + "\n")
-subprocess.run([str((bundle / ("cxl" + suffix)).resolve()), "--version"], check=True)
+subprocess.run([str((bundle / ("rlb" + suffix)).resolve()), "--version"], check=True)
 print(archive)

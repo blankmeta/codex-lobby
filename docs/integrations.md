@@ -3,7 +3,7 @@
 [← README](../README.md) · [Profiles](profiles.md)
 
 ```sh
-codex-lobby status --line
+runlobby status --line
 ```
 
 Example output:
@@ -20,15 +20,15 @@ Add this to your tmux configuration, or append the command expression to your ex
 
 ```tmux
 set -g status-interval 30
-set -g status-right '#(cd #{q:pane_current_path} && codex-lobby status --line)'
+set -g status-right '#(cd #{q:pane_current_path} && runlobby status --line)'
 ```
 
-`codex-lobby` must be on the tmux server's PATH. The [tmux format modifier](https://man.openbsd.org/tmux#FORMATS) quotes the pane directory for the shell. This is an example configuration; automated tests cover status output, not tmux rendering.
+`runlobby` must be on the tmux server's PATH. The [tmux format modifier](https://man.openbsd.org/tmux#FORMATS) quotes the pane directory for the shell. This is an example configuration; automated tests cover status output, not tmux rendering.
 
 ## JSON contract, version 1
 
 ```sh
-codex-lobby status --json
+runlobby status --json
 ```
 
 The command returns one JSON object on stdout. Failures go to stderr with a nonzero exit code. It reads local state by default; `--refresh` requests usage data for idle profiles. Running profiles retain their cached data.

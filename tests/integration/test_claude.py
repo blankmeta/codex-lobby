@@ -100,12 +100,12 @@ class ClaudeProfileTests(unittest.TestCase):
         self.assertEqual(self.profiles.names(), ["work"])
 
 
-@unittest.skipUnless(os.environ.get("CODEX_LOBBY_TEST_CLAUDE_BINARY"), "Native Claude compatibility check")
+@unittest.skipUnless(os.environ.get("RUNLOBBY_TEST_CLAUDE_BINARY"), "Native Claude compatibility check")
 class NativeClaudeTests(unittest.TestCase):
     def test_native_claude_uses_each_isolated_home_and_reports_the_matching_identity(self):
         with tempfile.TemporaryDirectory() as folder:
             homes = [Path(folder) / name for name in ("personal", "work")]
-            binary = os.environ["CODEX_LOBBY_TEST_CLAUDE_BINARY"]
+            binary = os.environ["RUNLOBBY_TEST_CLAUDE_BINARY"]
             provider = ClaudeProvider(binary)
             for home in homes:
                 atomic_json(home / ".credentials.json", {"claudeAiOauth": {"accessToken": "synthetic-test-only",

@@ -1,3 +1,3 @@
-"""Codex Lobby: ChatGPT account switching, with optional VLESS connectivity."""
+"""RunLobby: accounts, limits and sessions across AI providers."""
 
-__version__ = "2.0.1"
+__version__ = "1.4.0"

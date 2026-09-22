@@ -70,6 +70,6 @@ Use codex-auth 0.3.0 for the integration test. Optionally set `CODEX_SWITCH_TEST
 
 Python 3.11+ and psutil. CI runs on Windows, Linux and macOS, including native console and process tests. The Homebrew formula includes an installation smoke test.
 
-[Open an issue](https://github.com/blankmeta/codex-lobby/issues) with your OS version, the command you ran, and the behavior you expected. Redact email addresses, VLESS links, and credentials from shared output.
+[Open an issue](https://github.com/blankmeta/runlobby/issues) with your OS version, the command you ran, and the behavior you expected. Redact email addresses, VLESS links, and credentials from shared output.
 
 For a pull request, keep domain rules free of I/O, implement external behavior behind application protocols, and include a test for the behavior you change. Run the suite before submitting.

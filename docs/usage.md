@@ -4,7 +4,7 @@
 
 ## First launch
 
-Run `cxl`, choose **Add account → ChatGPT or Claude**, and sign in in your browser. The app uses the email as its display name and starts the selected provider after the first sign-in. Choose **Settings → Manage accounts → Rename account** to give it a label such as Work or Personal. Unicode names and spaces are supported.
+Run `rlb`, choose **Add account → ChatGPT or Claude**, and sign in in your browser. The app uses the email as its display name and starts the selected provider after the first sign-in. Choose **Settings → Manage accounts → Rename account** to give it a label such as Work or Personal. Unicode names and spaces are supported.
 
 Use arrows and Enter; Esc goes back. Terminals without interactive input use numbered choices, with `q` to go back. A single-account installation still shows the menu, so adding an account and settings remain accessible.
 
@@ -34,39 +34,39 @@ Commands remain available for scripts. `accounts` shows both added and original 
 
 | I want to… | Run |
 | :--- | :--- |
-| **Choose an account and start** | `codex-lobby` |
-| Add or reauthenticate an isolated profile | `codex-lobby login work` |
-| Start a named profile | `codex-lobby run work` |
-| Remember a profile for this project | `codex-lobby bind work` |
-| Remove the project preference | `codex-lobby unbind` |
-| Show managed profiles | `codex-lobby profiles` |
-| JSON for integrations | `codex-lobby status --json` |
-| A compact status line | `codex-lobby status --line` |
-| Original account picker and history | `codex-lobby legacy` |
-| See accounts and saved limits | `codex-lobby accounts` |
-| Refresh limits from OpenAI | `codex-lobby accounts --refresh` |
-| Choose a default profile for this project | `codex-lobby switch` |
-| Choose an account and resume work | `codex-lobby resume` |
-| Set up or change the connection | `codex-lobby setup` |
-| Check installation and connectivity | `codex-lobby doctor` |
-| Stop the proxy, keeping saved settings | `codex-lobby stop` |
+| **Choose an account and start** | `runlobby` |
+| Add or reauthenticate an isolated profile | `runlobby login work` |
+| Start a named profile | `runlobby run work` |
+| Remember a profile for this project | `runlobby bind work` |
+| Remove the project preference | `runlobby unbind` |
+| Show managed profiles | `runlobby profiles` |
+| JSON for integrations | `runlobby status --json` |
+| A compact status line | `runlobby status --line` |
+| Original account picker and history | `runlobby legacy` |
+| See accounts and saved limits | `runlobby accounts` |
+| Refresh limits from OpenAI | `runlobby accounts --refresh` |
+| Choose a default profile for this project | `runlobby switch` |
+| Choose an account and resume work | `runlobby resume` |
+| Set up or change the connection | `runlobby setup` |
+| Check installation and connectivity | `runlobby doctor` |
+| Stop the proxy, keeping saved settings | `runlobby stop` |
 
-Pass arguments to the selected provider with `codex-lobby -- <arguments>`. The old `codex-switch` and `codex-vpn` commands remain available. Add a named Claude profile with `cxl login work --provider claude`.
+Pass arguments to the selected provider with `runlobby -- <arguments>`. The old `codex-switch` and `codex-vpn` commands remain available. Add a named Claude profile with `rlb login work --provider claude`.
 
 ## Русский интерфейс / Russian prompts
 
 ```sh
-CODEX_LOBBY_LANG=ru codex-lobby
+RUNLOBBY_LANG=ru runlobby
 ```
 
-Язык также можно выбрать в **Settings → Language / Язык**. Приложение сохранит выбор. Переменная `CODEX_LOBBY_LANG` имеет приоритет при следующем запуске.
+Язык также можно выбрать в **Settings → Language / Язык**. Приложение сохранит выбор. Переменная `RUNLOBBY_LANG` имеет приоритет при следующем запуске.
 
 [Полная инструкция на русском →](README.ru.md)
 
 
 ## Optional VLESS connection
 
-Run `codex-lobby setup`, choose **Paste a VLESS link**, and paste your provider's link. Input is hidden in interactive terminals. The app validates the link, starts Xray, and tests connectivity. Normal connectivity requires no setup wizard.
+Run `runlobby setup`, choose **Paste a VLESS link**, and paste your provider's link. Input is hidden in interactive terminals. The app validates the link, starts Xray, and tests connectivity. Normal connectivity requires no setup wizard.
 
 | Security | Transports |
 | :--- | :--- |
@@ -80,16 +80,16 @@ Transport and security combinations must be compatible. If the server fails the 
 | :--- | :--- |
 | Application configuration | [Platform-specific paths and migration](install.md) |
 | Existing VLESS configuration | Read from `~/.config/xray-codex/servers.json` |
-| Managed profiles | `~/.config/codex-lobby/profiles/<name>/` |
-| Project preferences | `~/.config/codex-lobby/projects.json` |
+| Managed profiles | `~/.config/runlobby/profiles/<name>/` |
+| Project preferences | `~/.config/runlobby/projects.json` |
 | ChatGPT credentials | Codex in each managed home; codex-auth / Codex for legacy mode |
 | Default proxy address | `http://127.0.0.1:10810` |
-| Custom application directory | `CODEX_LOBBY_HOME` |
+| Custom application directory | `RUNLOBBY_HOME` |
 | Custom proxy port | `CODEX_PROXY_PORT` |
-| Interface language | `CODEX_LOBBY_LANG=en` or `ru` |
+| Interface language | `RUNLOBBY_LANG=en` or `ru` |
 
-A custom `CODEX_LOBBY_HOME` isolates application settings and managed profiles, and disables legacy VLESS import. Legacy account commands still use `CODEX_HOME` or its normal default. Existing VLESS files stay in place. The launcher passes proxy settings to child processes without editing shell startup files or macOS network settings.
+A custom `RUNLOBBY_HOME` isolates application settings and managed profiles, and disables legacy VLESS import. Legacy account commands still use `CODEX_HOME` or its normal default. Existing VLESS files stay in place. The launcher passes proxy settings to child processes without editing shell startup files or macOS network settings.
 
 `profiles --refresh` (or `accounts --refresh` in managed mode) asks codex-auth to retrieve usage data for idle profiles. Running profiles keep their cached snapshots. Authentication errors ask you to sign in again; cached data retains its snapshot time. This launcher does not rotate accounts automatically or bypass usage limits.
 
-The core `codex-proxy` commands remain available: `--set-vless`, `--run`, `--list`, `--status`, and `--stop`. The [original unmodified wrapper](https://github.com/blankmeta/codex-lobby/tree/v1.0.0) remains available in the first release tag. The current launcher focuses on account selection and direct VLESS setup rather than the original subscription and GUI environment helpers.
+The core `codex-proxy` commands remain available: `--set-vless`, `--run`, `--list`, `--status`, and `--stop`. The [original unmodified wrapper](https://github.com/blankmeta/runlobby/tree/v1.0.0) remains available in the first release tag. The current launcher focuses on account selection and direct VLESS setup rather than the original subscription and GUI environment helpers.

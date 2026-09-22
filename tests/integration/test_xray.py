@@ -44,7 +44,7 @@ class XrayTunnelTests(unittest.TestCase):
             def do_GET(self):
                 self.send_response(200)
                 self.end_headers()
-                self.wfile.write(b"codex-lobby-local-tunnel-ok")
+                self.wfile.write(b"runlobby-local-tunnel-ok")
             def log_message(self, *args): pass
 
         target = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
@@ -69,7 +69,7 @@ class XrayTunnelTests(unittest.TestCase):
                 self.assertTrue(state.running)
                 status, body = proxy_get(state.url, f"http://127.0.0.1:{target.server_port}")
                 self.assertEqual(status, 200)
-                self.assertEqual(body.decode(), "codex-lobby-local-tunnel-ok")
+                self.assertEqual(body.decode(), "runlobby-local-tunnel-ok")
                 with self.assertRaises(SwitchError): proxy.start(parse_vless(LINK))
                 self.assertTrue(proxy.status().running)
                 proxy.stop()

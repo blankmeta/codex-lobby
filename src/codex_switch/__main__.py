@@ -20,7 +20,7 @@ def main(args=None):
     except KeyboardInterrupt:
         return 130
     except (OSError, ValueError) as exc:
-        print("Не удалось выполнить команду. Проверь установку: codex-lobby doctor", file=sys.stderr)
+        print("Не удалось выполнить команду. Проверь установку: runlobby doctor", file=sys.stderr)
         return 1
 
 

@@ -27,7 +27,7 @@ class ProviderRegistry:
 
     def get(self, name: str) -> AgentProvider:
         if name not in self._providers:
-            raise SwitchError(f"Provider '{name}' is unavailable. Update Codex Lobby.")
+            raise SwitchError(f"Provider '{name}' is unavailable. Update RunLobby.")
         return self._providers[name]
 
     def choices(self) -> list[ProviderInfo]:

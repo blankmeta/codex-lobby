@@ -53,12 +53,12 @@ class SwitchApplication:
             return None
         server = next((s for s in self.servers.list() if s.id == preferences.selected_server), None)
         if server is None:
-            raise SwitchError("Добавь подключение: codex-lobby setup")
+            raise SwitchError("Добавь подключение: runlobby setup")
         state = self.proxy.status()
         if not state.running or state.server_id != server.id:
             state = self.proxy.start(server)
         if not state.running or not state.url:
-            raise SwitchError("Прокси не запустился. Проверь подключение: codex-lobby doctor")
+            raise SwitchError("Прокси не запустился. Проверь подключение: runlobby doctor")
         return state.url
 
     def list_accounts(self, *, refresh: bool = False) -> list[Account]:
@@ -101,7 +101,7 @@ class SwitchApplication:
     def bind_profile(self, name: str) -> None:
         profile_name(name)
         if name not in self.profiles.names():
-            raise SwitchError("Profile not found. Create it with codex-lobby login <name>.")
+            raise SwitchError("Profile not found. Create it with runlobby login <name>.")
         self.projects.bind(name)
 
     def launch_profile(self, name: str, args: list[str]) -> int:
