@@ -9,6 +9,9 @@ jobs:
       matrix:
         os: [ubuntu-22.04, macos-14, windows-latest]
         python: ['3.11', '3.13']
+        include:
+          - os: ubuntu-24.04-arm
+            python: '3.13'
     runs-on: ${{ matrix.os }}
     env:
       PYTHONPATH: src
@@ -28,7 +31,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-22.04, macos-14, macos-15-intel, windows-latest]
+        os: [ubuntu-22.04, ubuntu-24.04-arm, macos-14, macos-15-intel, windows-latest]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4

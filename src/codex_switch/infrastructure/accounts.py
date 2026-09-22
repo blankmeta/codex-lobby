@@ -1,7 +1,7 @@
 import json
 import subprocess
 
-from codex_switch.domain.errors import SwitchError
+from codex_switch.domain.errors import MissingTool, SwitchError
 from codex_switch.domain.models import Account, UsageWindow
 from .processes import command_for, connection_environment, profile_environment, require_binary
 
@@ -54,7 +54,12 @@ class CodexAuth:
         args = ["list", "--api" if refresh else "--skip-api"]
         if self.home:
             args.append("--active")
-        data = self._json(args, proxy)
+        try:
+            data = self._json(args, proxy)
+        except MissingTool:
+            if self.home is None:
+                return []  # A Claude-only install has no original Codex accounts.
+            raise
         try:
             return [decode_account(row) for row in data["accounts"]]
         except (KeyError, TypeError, ValueError):

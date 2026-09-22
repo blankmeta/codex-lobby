@@ -6,9 +6,10 @@ from pathlib import Path, PurePosixPath
 import platform
 import shutil
 import sys
+import subprocess
 import tarfile
 import tempfile
-from urllib.request import urlopen
+from urllib.request import ProxyHandler, build_opener
 import zipfile
 
 from codex_switch.domain.errors import SwitchError
@@ -22,6 +23,21 @@ def platform_key():
     if not arch or sys.platform not in ("darwin", "linux", "win32"):
         raise SwitchError("Automatic tool installation supports Windows, macOS and Linux on x64 or ARM64.")
     return sys.platform + "-" + arch
+
+
+def system_git_bash():
+    if os.name != "nt":
+        return None
+    configured = os.environ.get("CLAUDE_CODE_GIT_BASH_PATH")
+    candidates = [Path(configured)] if configured else []
+    for key in ("ProgramFiles", "ProgramFiles(x86)", "LOCALAPPDATA"):
+        if os.environ.get(key):
+            root = Path(os.environ[key])
+            candidates += [root / "Git/bin/bash.exe", root / "Programs/Git/bin/bash.exe"]
+    git = shutil.which("git")
+    if git:
+        candidates.append(Path(git).parent.parent / "bin/bash.exe")
+    return next((str(p) for p in candidates if p.is_file()), None)
 
 
 def unpack(archive, target, format):
@@ -69,13 +85,16 @@ class NativeTools:
             raise SwitchError("Invalid installed tool path.")
         return str(path) if path.is_file() else None
 
-    def ensure(self, names):
+    def ensure(self, names, *, proxy=None):
         for name in names:
+            if name == "claude" and os.name == "nt":
+                if not self.installed("git-bash") and not system_git_bash():
+                    self.install("git-bash", proxy=proxy)
             if self.installed(name) or shutil.which(name) or os.environ.get("CODEX_LOBBY_" + name.upper().replace("-", "_") + "_BINARY"):
                 continue
-            self.install(name)
+            self.install(name, proxy=proxy)
 
-    def install(self, name):
+    def install(self, name, *, proxy=None):
         manifest = self.manifest or json.loads(Path(__file__).with_name("tool-manifest.json").read_text(encoding="utf-8"))
         try:
             spec = manifest[platform_key()][name]
@@ -90,7 +109,8 @@ class NativeTools:
                     archive = stage / "download"
                     digest = hashlib.sha512() if "sha512" in spec else hashlib.sha256()
                     try:
-                        with urlopen(spec["url"], timeout=60) as source, archive.open("wb") as output:
+                        opener = build_opener(ProxyHandler({"http": proxy, "https": proxy})) if proxy else build_opener()
+                        with opener.open(spec["url"], timeout=60) as source, archive.open("wb") as output:
                             while block := source.read(1024 * 1024):
                                 digest.update(block)
                                 output.write(block)
@@ -100,7 +120,15 @@ class NativeTools:
                         raise SwitchError(f"{name} download failed its checksum check. Nothing was installed.")
                     payload = stage / "payload"
                     payload.mkdir()
-                    if spec["format"] == "binary":
+                    if spec["format"] == "sfx":
+                        executable = stage / "extract.exe"
+                        os.rename(archive, executable)
+                        result = subprocess.run([str(executable), "-o" + str(payload), "-y"],
+                                                stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL,
+                                                stderr=subprocess.DEVNULL, timeout=120)
+                        if result.returncode:
+                            raise SwitchError("Could not unpack Git Bash. Nothing was installed.")
+                    elif spec["format"] == "binary":
                         shutil.move(archive, payload / spec["binary"])
                     else:
                         unpack(archive, payload, spec["format"])

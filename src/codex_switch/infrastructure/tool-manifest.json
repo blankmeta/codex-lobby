@@ -182,6 +182,13 @@
       "version": "24.13.0",
       "format": "zip",
       "binary": "node-v24.13.0-win-x64/node.exe"
+    },
+    "git-bash": {
+      "url": "https://github.com/git-for-windows/git/releases/download/v2.53.0.windows.1/PortableGit-2.53.0-64-bit.7z.exe",
+      "sha256": "08713a710ec91ac90de1c09f861289a3b103175f098676e5e664c04dd6c6bf23",
+      "version": "2.53.0",
+      "format": "sfx",
+      "binary": "bin/bash.exe"
     }
   },
   "win32-arm64": {
@@ -219,6 +226,13 @@
       "version": "24.13.0",
       "format": "zip",
       "binary": "node-v24.13.0-win-arm64/node.exe"
+    },
+    "git-bash": {
+      "url": "https://github.com/git-for-windows/git/releases/download/v2.53.0.windows.1/PortableGit-2.53.0-64-bit.7z.exe",
+      "sha256": "08713a710ec91ac90de1c09f861289a3b103175f098676e5e664c04dd6c6bf23",
+      "version": "2.53.0",
+      "format": "sfx",
+      "binary": "bin/bash.exe"
     }
   }
 }

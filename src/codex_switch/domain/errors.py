@@ -6,6 +6,12 @@ class Cancelled(SwitchError):
     pass
 
 
+class MissingTool(SwitchError):
+    def __init__(self, name):
+        self.name = name
+        super().__init__(f"{name} is not installed. Open Settings → Install tools, then try again.")
+
+
 class AccountAlreadyAdded(SwitchError):
     def __init__(self, name: str):
         self.name = name

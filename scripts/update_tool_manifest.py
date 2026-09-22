@@ -39,5 +39,8 @@ for system, rust_os, xray_os in [("darwin", "apple-darwin", "macos"), ("linux", 
             "node": {"url": "https://nodejs.org/dist/v24.13.0/" + node_archive, "sha256": node[node_archive], "version": "24.13.0", "format": "zip" if exe else "tar", "binary": f"node-v24.13.0-{node_os}-{arch}/" + ("node.exe" if exe else "bin/node")},
         }
 path = Path(__file__).parents[1] / "src/codex_switch/infrastructure/tool-manifest.json"
+git = release("git-for-windows/git", "v2.53.0.windows.1")["PortableGit-2.53.0-64-bit.7z.exe"]
+for key in ("win32-x64", "win32-arm64"):
+    manifest[key]["git-bash"] = {**git, "version": "2.53.0", "format": "sfx", "binary": "bin/bash.exe"}
 path.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
 print("Pinned tools for", ", ".join(manifest))

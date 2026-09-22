@@ -9,6 +9,9 @@ from .infrastructure.xray import XrayProxy
 from .infrastructure.profiles import LocalProfiles
 from .infrastructure.projects import JsonProjects
 from .infrastructure.tools import NativeTools
+from .application.providers import ProviderRegistry
+from .infrastructure.providers.codex import CodexProvider
+from .infrastructure.providers.claude import ClaudeProvider
 
 
 def build_application() -> SwitchApplication:
@@ -16,8 +19,8 @@ def build_application() -> SwitchApplication:
     platform = current_platform()
     directory = platform.paths.data_directory()
     legacy = platform.paths.legacy_directory()
-    servers = JsonServers(directory, legacy)
+    servers = JsonServers(directory, legacy, locks=platform.locks)
     settings = JsonSettings(directory, servers)
     port = int(os.environ.get("CODEX_PROXY_PORT", "10810"))
     tools = NativeTools(directory)
-    return SwitchApplication(settings, servers, CodexAuth(), XrayProxy(directory, port, legacy, tools=tools), CodexProcess(), ProcessDiagnostics(), LocalProfiles(directory), JsonProjects(directory), tools=tools)
+    return SwitchApplication(settings, servers, CodexAuth(), XrayProxy(directory, port, legacy, tools=tools, processes=platform.processes, locks=platform.locks), CodexProcess(), ProcessDiagnostics(), LocalProfiles(directory, providers=ProviderRegistry([CodexProvider(), ClaudeProvider()]), locks=platform.locks), JsonProjects(directory, locks=platform.locks), tools=tools)

@@ -23,10 +23,13 @@ class SwitchApplication:
             provider = next((p for p in self.available_providers() if p.id == provider_id), None)
             if provider is None:
                 raise SwitchError("Choose Codex or Claude.")
-            self.tools.ensure(provider.tools)
+            self.tools.ensure(provider.tools, proxy=self.connection())
 
     def available_providers(self):
         return self.profiles.provider_choices()
+
+    def provider_info(self, provider_id):
+        return next(p for p in self.available_providers() if p.id == provider_id)
 
     def use_direct_connection(self) -> None:
         self.settings.save(replace(self.settings.load(), configured=True, proxy_enabled=False, selected_server=None))

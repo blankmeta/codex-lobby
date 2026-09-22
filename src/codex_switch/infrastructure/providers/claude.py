@@ -27,6 +27,11 @@ def claude_environment(home, proxy=None, base=None):
             "CLAUDE_CODE_SESSION_ID", "CLAUDE_CODE_ENTRYPOINT", "CLAUDE_CODE_CONFIG_PATH"}):
             env.pop(key, None)
     env["CLAUDE_CONFIG_DIR"] = str(Path(home).resolve())
+    if os.name == "nt":
+        from ..tools import NativeTools, system_git_bash
+        bash = NativeTools().installed("git-bash") or system_git_bash()
+        if bash:
+            env["CLAUDE_CODE_GIT_BASH_PATH"] = bash
     return env
 
 

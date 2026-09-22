@@ -8,6 +8,7 @@ from unittest.mock import patch
 from codex_switch.domain.catalog import account_catalog
 from codex_switch.domain.models import Account, UsageWindow
 from codex_switch.domain.profiles import ProfileStatus
+from codex_switch.domain.providers import CODEX, CLAUDE
 from codex_switch.presentation.console import Console
 from codex_switch.presentation.home import HomeMenu
 from codex_switch.presentation.menu import frame
@@ -15,11 +16,11 @@ from codex_switch.presentation.menu import frame
 now = 1789732800
 rows = [ProfileStatus("personal", Account("demo-personal", "Personal", "alex@example.com", "plus",
                        primary=UsageWindow(24, 300, now+7200), secondary=UsageWindow(38, 10080, now+86400),
-                       source="cache", updated_at=now-180), running=True, label="Personal"),
+                       source="claude-statusline", updated_at=now-180), label="Personal", provider="claude"),
         ProfileStatus("work", Account("demo-work", "Work", "alex@company.example", "business",
                        primary=UsageWindow(8, 300, now+5400), secondary=UsageWindow(16, 10080, now+172800),
                        source="cache", updated_at=now-120), label="Work")]
-home = HomeMenu(SimpleNamespace(), Console(language="en"))
+home = HomeMenu(SimpleNamespace(provider_info=lambda name: CLAUDE if name == "claude" else CODEX), Console(language="en"))
 with patch("codex_switch.presentation.usage.time.time", return_value=now):
     options = home.options(account_catalog(rows, []), "work")
     lines = frame("Codex Lobby", options, 1,
@@ -28,9 +29,9 @@ with patch("codex_switch.presentation.usage.time.time", return_value=now):
 height = 100 + len(lines) * 28
 parts = [f'<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="{height}" viewBox="0 0 1280 {height}" role="img" aria-labelledby="title desc">',
          '<title id="title">Codex Lobby account menu</title>',
-         '<desc id="desc">Work is selected for this project, with 92% of its five-hour limit and 84% of its weekly limit left. Personal is open in another terminal. Add accounts, resume work, refresh limits and settings are in the same menu. Synthetic accounts.</desc>',
+         '<desc id="desc">Work is selected for this project, with 92% of its five-hour limit and 84% of its weekly limit left. Personal uses Claude. Add accounts, resume work, refresh limits and settings are in the same menu. Synthetic accounts.</desc>',
          f'<rect width="1280" height="{height}" rx="8" fill="#181b19"/>',
-         '<text x="38" y="34" fill="#7f8b82" font-family="Helvetica,Arial,sans-serif" font-size="14">$ codex-lobby</text>',
+         '<text x="38" y="34" fill="#7f8b82" font-family="Helvetica,Arial,sans-serif" font-size="14">$ cxl</text>',
          '<path d="M0 50H1280" stroke="#30372f"/>']
 for i, line in enumerate(lines):
     color = '#aec89f' if line.startswith('›') or 'Enter:' in line else '#9aa69d' if 'Updated' in line or 'Resets' in line else '#e4e9e1'

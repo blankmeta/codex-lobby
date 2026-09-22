@@ -29,9 +29,9 @@ class ProfileBusy(SwitchError):
 
 
 @contextmanager
-def profile_lock(path: Path):
+def profile_lock(path: Path, locks=None):
     try:
-        with current_platform().locks.acquire(path) as lease:
+        with (locks or current_platform().locks).acquire(path) as lease:
             yield lease
     except BlockingIOError:
         raise ProfileBusy("This profile is busy. Resume in its terminal, or use another profile.") from None
@@ -54,10 +54,14 @@ def cached_account(data) -> Account:
 
 
 class LocalProfiles:
-    def __init__(self, directory: Path, runner=subprocess.run, auth_factory=CodexAuth, codex_binary=None, providers=None):
+    def __init__(self, directory: Path, runner=subprocess.run, auth_factory=CodexAuth, codex_binary=None, providers=None, locks=None):
         self.directory = directory / "profiles"
         self.runner, self.auth_factory, self.codex_binary = runner, auth_factory, codex_binary
+        self.locks = locks or current_platform().locks
         self.providers = providers or ProviderRegistry([CodexProvider(auth_factory, codex_binary), ClaudeProvider()])
+
+    def _lock(self, path):
+        return profile_lock(path, self.locks)
 
     def home(self, name: str) -> Path:
         path = self.directory / profile_name(name)
@@ -129,7 +133,7 @@ class LocalProfiles:
     def rename(self, name: str, label: str) -> None:
         label = account_label(label)
         home = self.home(name)
-        with profile_lock(self.directory / f".{name}.lock"):
+        with self._lock(self.directory / f".{name}.lock"):
             self._saved(name)
             data = read_json(home / "profile.json", {})
             data["label"] = label
@@ -137,7 +141,7 @@ class LocalProfiles:
 
     def remove(self, name: str) -> None:
         home = self.home(name)
-        with profile_lock(self.directory / f".{name}.lock"), profile_lock(self.directory / ".login.lock"):
+        with self._lock(self.directory / f".{name}.lock"), self._lock(self.directory / ".login.lock"):
             if not (home / "profile.json").exists():
                 raise SwitchError("Account no longer exists.")
             provider = self.provider(name)
@@ -165,7 +169,7 @@ class LocalProfiles:
         try:
             provider_id = self.provider(name).info.id
             saved = self._saved(name)
-            with profile_lock(self.directory / f".{name}.lock"):
+            with self._lock(self.directory / f".{name}.lock"):
                 return self._inspect(name, refresh=refresh, proxy=proxy)
         except ProfileBusy:
             return ProfileStatus(name, saved, running=True, label=self._label(name), provider=provider_id)
@@ -181,7 +185,7 @@ class LocalProfiles:
             return self._login_permanent(name, selected, proxy=proxy)
         self.directory.mkdir(parents=True, exist_ok=True, mode=0o700)
         self.directory.chmod(0o700)
-        with profile_lock(self.directory / f".{name}.lock") as lock, profile_lock(self.directory / ".login.lock"):
+        with self._lock(self.directory / f".{name}.lock") as lock, self._lock(self.directory / ".login.lock"):
             previous = None
             if (home / "profile.json").exists():
                 try:
@@ -215,7 +219,7 @@ class LocalProfiles:
 
     def _login_permanent(self, name, provider, *, proxy=None):
         home = self.home(name)
-        with profile_lock(self.directory / f".{name}.lock") as lock, profile_lock(self.directory / ".login.lock"):
+        with self._lock(self.directory / f".{name}.lock") as lock, self._lock(self.directory / ".login.lock"):
             previous = self._saved(name) if (home / "profile.json").exists() else None
             generation = uuid4().hex
             runtime = home / "claude" / generation
@@ -252,7 +256,7 @@ class LocalProfiles:
     def run(self, name: str, args: list[str], *, proxy=None) -> int:
         provider = self.provider(name)
         provider.validate_arguments(args)
-        with profile_lock(self.directory / f".{name}.lock") as lock:
+        with self._lock(self.directory / f".{name}.lock") as lock:
             status = self._inspect(name)
             if status.account.needs_login:
                 raise SwitchError("Choose Sign in again for this account.")

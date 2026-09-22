@@ -6,7 +6,7 @@
 flowchart TD
     CLI[Presentation: terminal prompts] --> APP[Application: use cases and ports]
     APP --> DOMAIN[Domain: accounts, usage windows, VLESS validation]
-    INFRA[Infrastructure: codex-auth, Xray, JSON storage] --> APP
+    INFRA[Infrastructure: provider and OS adapters, JSON storage] --> APP
     BOOT[Bootstrap] --> CLI
     BOOT --> INFRA
 ```
@@ -24,11 +24,21 @@ Xray listens on loopback. Switching to normal connectivity changes future launch
 
 Settings writes use mode `0600`, a temporary file, `fsync`, and atomic replacement. Server updates and Xray lifecycle changes use file locks. Legacy VLESS files are read without overwriting them. Codex performs OAuth in a fresh staged home. Managed login validates account metadata through codex-auth, then publishes the new home or atomically replaces the authenticated file on re-login. Tokens are not decoded by this project or emitted in status. Legacy accounts remain managed by codex-auth.
 
+## Providers and platforms
+
+`AgentProvider` and `ProviderRegistry` separate account/session behavior from storage and UI. Codex and Claude implement the same contract. `ProviderInfo` supplies menu labels, tool requirements and usage capabilities. [Add another provider](providers.md).
+
+`application/platform_ports.py` defines `FileLocks`, `Lease`, `TerminalInput`, `AppPaths` and `ProcessControl`. macOS and Linux share POSIX locks and terminal input, with separate path policies. Windows implements exclusive inherited file handles and native console events. Process adapters use psutil for executable/configuration identity and PID-reuse protection; detached process creation differs by OS. Proxy HTTP checks use the Python standard library instead of OS-specific curl paths.
+
+The terminal renderer only consumes normalized keys. It never imports `termios`, `fcntl`, Win32 APIs or infrastructure. The composition root supplies its native terminal adapter. Native process-lock tests terminate the wrapper while the actual Codex app-server stays alive and verify a competing launch remains blocked, on all three operating systems.
+
+Private JSON files use UTF-8 explicitly. Unix permissions are 0600/0700; Windows inherits user-directory ACLs. Existing account paths survive the product rename. Standalone native bundles include Python and psutil; provider tools install separately from pinned official archives after checksum verification.
+
 ## Managed profiles
 
 `Profiles` and `Projects` are application ports. Domain rules validate names and reject identity/storage overrides. `LocalProfiles` owns directory operations, subprocesses, and private snapshots. `JsonProjects` stores canonical project-root preferences outside repositories. Presentation formats these models without importing adapters.
 
-A nonblocking advisory lock covers each managed profile for the duration of login, API refresh, or launch. The Codex child inherits the descriptor, so terminating only its wrapper does not release the lock. Different profiles use different locks. One profile supports one running process in this release; external tools do not participate in this locking protocol.
+A nonblocking native lock covers each managed profile for the duration of login, API refresh, or launch. The native agent child inherits the POSIX descriptor or exclusive Win32 handle, so terminating only its wrapper does not release the lock. Different profiles use different locks. One profile supports one running agent process in this release; external tools do not participate in this locking protocol.
 
 Sign-in uses a staging directory and checks the account identity before publishing credentials. Reauthentication preserves history. Runtime homes and SQLite homes are per-profile. The launcher does not copy the original user's Codex configuration or refresh tokens.
 
@@ -58,8 +68,8 @@ Use codex-auth 0.3.0 for the integration test. Optionally set `CODEX_SWITCH_TEST
 
 ## Contributing
 
-Python 3.11+; no third-party Python runtime dependencies. CI runs on Linux and macOS. The Homebrew formula includes an installation smoke test.
+Python 3.11+ and psutil. CI runs on Windows, Linux and macOS, including native console and process tests. The Homebrew formula includes an installation smoke test.
 
-[Open an issue](https://github.com/blankmeta/codex-switch/issues) with your macOS version, the command you ran, and the behavior you expected. Redact email addresses, VLESS links, and credentials from shared output.
+[Open an issue](https://github.com/blankmeta/codex-lobby/issues) with your OS version, the command you ran, and the behavior you expected. Redact email addresses, VLESS links, and credentials from shared output.
 
 For a pull request, keep domain rules free of I/O, implement external behavior behind application protocols, and include a test for the behavior you change. Run the suite before submitting.

@@ -4,7 +4,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-from codex_switch.domain.errors import SwitchError
+from codex_switch.domain.errors import MissingTool, SwitchError
 
 PROXY_KEYS = ("HTTP_PROXY", "HTTPS_PROXY", "ALL_PROXY", "WS_PROXY", "WSS_PROXY")
 
@@ -38,7 +38,7 @@ def require_binary(name: str) -> str:
         candidate = Path.home() / ".local/bin" / ("claude.exe" if os.name == "nt" else "claude")
         binary = str(candidate) if candidate.is_file() else None
     if not binary:
-        raise SwitchError(f"{name} is not installed. Open Settings → Install tools, then try again.")
+        raise MissingTool(name)
     return binary
 
 

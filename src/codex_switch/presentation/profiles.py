@@ -48,8 +48,8 @@ class ProfileCLI:
             profile_name(name)
         if not self.app.settings.load().configured:
             self.app.use_direct_connection()
-        self.c.say("Sign in to ChatGPT in the browser. This profile has its own sessions.",
-                   "Войди в ChatGPT в браузере. У этого профиля будет отдельная история сессий.")
+        self.c.say("Sign in in the browser. This account has its own sessions.",
+                   "Войди в браузере. У этого аккаунта будет отдельная история сессий.")
         self.app.prepare_provider(provider or "codex")
         status = self.app.login_profile(name, **({"provider": provider} if provider else {}))
         self.c.say(f"✓ Saved '{status.title}'. Start: codex-lobby", f"✓ Сохранён '{status.title}'. Запустить: codex-lobby")
@@ -71,7 +71,7 @@ class ProfileCLI:
 
     def launch(self, name, args):
         profile_name(name)
-        self.c.say(f"\nStarting Codex · {name}\n", f"\nЗапускаю Codex · {name}\n")
+        self.c.say(f"\nStarting account · {name}\n", f"\nЗапускаю аккаунт · {name}\n")
         return self.app.launch_profile(name, args)
 
     def handle(self, args):

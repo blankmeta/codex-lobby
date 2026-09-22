@@ -34,7 +34,8 @@ class HomeMenu:
 
     def details(self, entry):
         c, a = self.c, entry.account
-        provider_title = entry.provider.capitalize() if entry.provider != "codex" else "Codex"
+        info = self.app.provider_info(entry.provider)
+        provider_title = info.title
         identity = f"{provider_title} · {a.email} · {a.plan}" if a else entry.title
         state = c.text("Separate sign-in and history", "Отдельный вход и история")
         if entry.original:
@@ -51,8 +52,8 @@ class HomeMenu:
         elif entry.needs_login or entry.profile and entry.profile.problem:
             action = c.text("Enter: fix sign-in", "Enter: восстановить вход")
         age = freshness(a, c.ru)
-        if entry.provider == "claude":
-            age = c.text("Limits update while you use Claude; /usage shows current usage.", "Лимиты обновляются во время работы в Claude; текущие данные — /usage.") if not a or not a.updated_at else age
+        if not info.usage_refresh:
+            age = c.text(f"Limits update while you use {info.title}.", f"Лимиты обновляются во время работы в {info.title}.") if not a or not a.updated_at else age
         return tuple(filter(None, [identity + " · " + state, age, resets(a, c.ru),
                                    action]))
 
@@ -73,7 +74,7 @@ class HomeMenu:
                 state += c.text(" · original", " · прежний")
             if entry.profile and entry.profile.name == bound:
                 state += c.text(" · this project", " · этот проект")
-            label = f"{clipped(entry.title, 24):24} {entry.provider.capitalize():6} {primary:>5}   {weekly:>5}{state}"
+            label = f"{clipped(entry.title, 24):24} {self.app.provider_info(entry.provider).title:6} {primary:>5}   {weekly:>5}{state}"
             options.append(Option(entry.id, label, self.details(entry), account_actions=True))
         options += [Option("add", c.text("+ Add account", "+ Добавить аккаунт"),
                            (c.text("Sign in in your browser. No name or configuration required.", "Войди в браузере. Придумывать имя и настраивать файлы не нужно."),)),
@@ -108,7 +109,7 @@ class HomeMenu:
             self.c.write(self.notice)
         return 0
 
-    def run(self, args=(), *, select_only=False):
+    def run(self, args=(), *, select_only=False, resume=False):
         c = self.c
         if not self.app.settings.load().configured:
             self.app.use_direct_connection()
@@ -176,7 +177,8 @@ class HomeMenu:
                 else:
                     entry = next(e for e in entries if e.id == key)
                     self.selected = key
-                    result = self.start(entry, list(args), select_only)
+                    forwarded = self.resume_args(entry) + list(args) if resume else list(args)
+                    result = self.start(entry, forwarded, select_only)
                     if result is not None:
                         return result
                     entries = self.snapshot()

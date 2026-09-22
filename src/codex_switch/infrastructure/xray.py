@@ -35,13 +35,14 @@ def equivalent_outbound(old: dict, new: dict) -> bool:
 
 
 class XrayProxy:
-    def __init__(self, directory: Path, port: int = 10810, legacy_directory: Path | None = None, processes=None, tools=None):
+    def __init__(self, directory: Path, port: int = 10810, legacy_directory: Path | None = None, processes=None, tools=None, locks=None):
         if not 1 <= port <= 65535:
             raise SwitchError("Порт должен быть от 1 до 65535.")
         self.directory, self.port, self.legacy = directory, port, legacy_directory
         self.config = directory / "xray.json"
         self.state_file = directory / "xray-state.json"
         self.url = f"http://127.0.0.1:{port}"
+        self.locks = locks
         self.tools = tools
         self._process = None
         self.processes = processes or current_platform().processes
@@ -89,7 +90,7 @@ class XrayProxy:
             Path(name).unlink(missing_ok=True)
 
     def start(self, server: Server) -> ProxyStatus:
-        with exclusive(self.directory, "xray.lock"):
+        with exclusive(self.directory, "xray.lock", self.locks):
             previous = self._state()
             if previous:
                 if previous.get("server_id") == server.id:
@@ -135,7 +136,7 @@ class XrayProxy:
             return ProxyStatus(True, self.url, server.id)
 
     def stop(self) -> None:
-        with exclusive(self.directory, "xray.lock"):
+        with exclusive(self.directory, "xray.lock", self.locks):
             state = self._state()
             if not state:
                 self.state_file.unlink(missing_ok=True)

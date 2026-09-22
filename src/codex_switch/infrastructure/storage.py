@@ -33,15 +33,16 @@ def atomic_json(path: Path, value) -> None:
 
 
 @contextmanager
-def exclusive(directory: Path, name: str):
-    with current_platform().locks.acquire(directory / name, wait=True):
+def exclusive(directory: Path, name: str, locks=None):
+    with (locks or current_platform().locks).acquire(directory / name, wait=True):
         yield
 
 
 class JsonServers:
-    def __init__(self, directory: Path, legacy_directory: Path | None = None):
+    def __init__(self, directory: Path, legacy_directory: Path | None = None, locks=None):
         self.path = directory / "servers.json"
         self.legacy = legacy_directory
+        self.locks = locks
 
     def list(self) -> list[Server]:
         data = read_json(self.path, None)
@@ -57,7 +58,7 @@ class JsonServers:
             raise SwitchError("Формат servers.json повреждён. Исходный файл сохранён.") from None
 
     def save(self, server: Server) -> None:
-        with exclusive(self.path.parent, "servers.lock"):
+        with exclusive(self.path.parent, "servers.lock", self.locks):
             servers = self.list()
             servers = [s for s in servers if s.id != server.id] + [server]
             atomic_json(self.path, [asdict(s) for s in servers])

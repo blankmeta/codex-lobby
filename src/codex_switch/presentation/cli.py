@@ -101,8 +101,8 @@ class CLI:
                     raise SwitchError("Usage: codex-lobby accounts [--refresh]")
                 return HomeMenu(self.app, c).list_accounts(refresh="--refresh" in args)
             if command not in ("login", "run", "bind", "unbind", "profiles", "status", "accounts"):
-                forwarded = args[1:] if command == "--" else [] if command == "switch" else args
-                return HomeMenu(self.app, c).run(forwarded, select_only=command == "switch")
+                forwarded = args[1:] if command in ("--", "resume") else [] if command == "switch" else args
+                return HomeMenu(self.app, c).run(forwarded, select_only=command == "switch", resume=command == "resume")
             handled = ProfileCLI(self.app, c).handle(args)
             if handled is not None:
                 return handled

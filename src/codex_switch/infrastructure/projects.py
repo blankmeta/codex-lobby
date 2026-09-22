@@ -7,9 +7,10 @@ from .storage import atomic_json, exclusive, read_json
 
 class JsonProjects:
     """Private local bindings; no account identifiers or secrets in a repository."""
-    def __init__(self, directory: Path, cwd=None):
+    def __init__(self, directory: Path, cwd=None, locks=None):
         self.path = directory / "projects.json"
         self.cwd = cwd or Path.cwd
+        self.locks = locks
 
     def current(self) -> str:
         path = Path(self.cwd()).resolve()
@@ -31,13 +32,13 @@ class JsonProjects:
 
     def bind(self, name: str) -> None:
         profile_name(name)
-        with exclusive(self.path.parent, "projects.lock"):
+        with exclusive(self.path.parent, "projects.lock", self.locks):
             data = self._load()
             data[self.current()] = name
             atomic_json(self.path, data)
 
     def unbind(self) -> None:
-        with exclusive(self.path.parent, "projects.lock"):
+        with exclusive(self.path.parent, "projects.lock", self.locks):
             data = self._load()
             data.pop(self.current(), None)
             atomic_json(self.path, data)

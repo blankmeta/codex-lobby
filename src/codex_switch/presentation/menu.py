@@ -91,7 +91,8 @@ class TerminalMenu:
                     size = shutil.get_terminal_size()
                     lines = frame(title, options, selected, context, width=size.columns, height=size.lines, ru=self.c.ru)
                     if lines != previous_frame:
-                        sys.stdout.write("\x1b[H\x1b[2J" + "\r\n".join(lines))
+                        styled = [("\x1b[1;32m" + line + "\x1b[0m") if line.startswith("›") else line for line in lines]
+                        sys.stdout.write("\x1b[H\x1b[2J" + "\r\n".join(styled))
                         sys.stdout.flush()
                         previous_frame = lines
                     key = self.terminal.read_key()
