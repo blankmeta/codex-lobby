@@ -46,6 +46,22 @@ class ClassificationTests(unittest.TestCase):
 
 
 class LogTests(unittest.TestCase):
+    def test_resumed_turn_prefers_modern_usage_despite_different_lifetime_totals(self):
+        p=LogParser('codex')
+        p.feed(codex('event_msg',{'type':'task_started','turn_id':'old'}))
+        legacy=lambda total,last: codex('event_msg',{'type':'token_count','info':{'total_token_usage':{'input_tokens':total},'last_token_usage':{'input_tokens':last}}})
+        p.feed(legacy(10,10))
+        p.feed(codex('event_msg',{'type':'task_started','turn_id':'new'}))
+        # Legacy arrives before modern in this synthetic turn; replace it too.
+        p.feed(legacy(20,20))
+        p.feed(codex('token_usage_record',{'turn_id':'new','response_id':'r','usage':{'input_tokens':20},'thread_token_usage':{'input_tokens':500020}}))
+        p.feed(legacy(999020,20))
+        self.assertEqual(p.snapshot().tokens.total,30)
+        # A subsequent run with a legacy-only CLI still contributes new usage.
+        p.feed(codex('event_msg',{'type':'task_started','turn_id':'older-cli'}))
+        p.feed(legacy(999060,40))
+        self.assertEqual(p.snapshot().tokens.total,70)
+
     def test_repetition_uses_all_arguments_without_exposing_them(self):
         p = LogParser('codex')
         for key,path in [('a','first.py'),('b','second.py'),('c','first.py')]:

@@ -56,6 +56,9 @@ class LogParser:
         self.completed_ids = set()
         self.serial = 0
         self.argument_hashes = {}
+        self.turn_key = None
+        self.modern_turns = set()
+        self.legacy_steps = {}
 
     def feed(self, row):
         if not isinstance(row, dict): return
@@ -106,6 +109,7 @@ class LogParser:
                 if isinstance(spawn, dict): self.activity.parent_id = spawn.get("parent_thread_id")
         elif kind == "turn_context":
             self.activity.project = self.activity.project or str(data.get("cwd") or "")
+            if data.get("turn_id"): self.turn_key = str(data["turn_id"])
         elif kind == "response_item":
             if subtype == "message" and data.get("role") == "user": self._title(content_text(data.get("content")))
             elif subtype in {"function_call", "custom_tool_call"}:
@@ -124,14 +128,28 @@ class LogParser:
         elif kind == "token_usage_record":
             usage = data.get("usage")
             if isinstance(usage, dict):
+                turn = str(data.get("turn_id") or self.turn_key or "unscoped")
+                self.turn_key = turn
+                self.modern_turns.add(turn)
+                # Modern response usage is authoritative within its turn. Legacy
+                # cumulative counters can reset after resume/compaction and must
+                # not be compared to the thread lifetime total for deduplication.
+                for legacy in self.legacy_steps.pop(turn, []):
+                    previous = self.activity.steps.pop(legacy, None)
+                    if previous:
+                        self.pending = list(dict.fromkeys(previous.action_ids + self.pending))
                 self._step("response:" + str(data.get("response_id") or self.serial), tokens(usage, "codex"))
                 total = data.get("thread_token_usage")
                 if isinstance(total, dict): self.usage_totals.add(tuple(tokens(total, "codex").__dict__.values()))
         elif kind == "event_msg":
             if subtype == "user_message": self._title(str(data.get("message") or ""))
-            elif subtype == "task_started": self.activity.status = "running"
+            elif subtype == "task_started":
+                self.activity.status = "running"
+                self.turn_key = str(data.get("turn_id") or "turn:" + str(self.serial))
             elif subtype in {"task_complete", "turn_aborted"}: self.activity.status = "idle" if subtype == "task_complete" else "interrupted"
             elif subtype == "token_count":
+                turn = self.turn_key or "unscoped"
+                if turn in self.modern_turns: return
                 info = data.get("info") or {}
                 total, last = info.get("total_token_usage"), info.get("last_token_usage")
                 if isinstance(total, dict) and isinstance(last, dict):
@@ -139,7 +157,9 @@ class LogParser:
                     if signature not in self.usage_totals:
                         self.usage_totals.add(signature)
                         identity = hashlib.sha256(json.dumps(row, sort_keys=True).encode()).hexdigest()
-                        self._step("legacy:" + identity, tokens(last, "codex"))
+                        key = "legacy:" + identity
+                        self._step(key, tokens(last, "codex"))
+                        self.legacy_steps.setdefault(turn, []).append(key)
             elif subtype == "item_completed": self._completed(data, now)
 
     def _completed(self, data, now):

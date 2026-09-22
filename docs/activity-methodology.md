@@ -50,6 +50,8 @@ replace that wrapper in the action count; both are never counted together.
   Claude cache-read/cache-write counters are added to its uncached input. Reasoning
   is a subset of output, not an additional charge. Repeated content-block usage and
   Codex's duplicate modern/legacy events are deduplicated.
+  When modern per-response usage exists for a turn, it supersedes that turn's
+  legacy counters even if cumulative totals differ after resume or compaction.
 - **Tokens by category**: a request belongs to one category only if all its linked
   calls have that category. Otherwise its tokens go to "Mixed actions". A response
   with no linked calls goes to "No tool call". This associates requests with
