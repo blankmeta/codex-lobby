@@ -1,4 +1,6 @@
 import unittest
+from dataclasses import replace
+from codex_switch.domain.errors import SwitchError
 
 from codex_switch.domain.models import Preferences
 from codex_switch.presentation.cli import CLI
@@ -8,6 +10,17 @@ from .test_domain import LINK
 
 
 class CLITests(unittest.TestCase):
+    def test_monitor_switch_is_saved_without_launching_or_changing_proxy(self):
+        cli,app,events,lines = self.cli([])
+        before = app.settings.load()
+        self.assertEqual(cli.run(['monitor','off']),0)
+        self.assertEqual(app.settings.load(),replace(before,monitor_enabled=False))
+        self.assertEqual(events,[])
+        self.assertIn('off',lines[0])
+        cli.run(['monitor','on'])
+        self.assertTrue(app.settings.load().monitor_enabled)
+        with self.assertRaises(SwitchError):cli.run(['monitor','maybe'])
+
     def cli(self, inputs, language="en"):
         app, events = application()
         lines = []

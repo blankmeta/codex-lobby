@@ -35,6 +35,9 @@ class SwitchApplication:
     def use_direct_connection(self) -> None:
         self.settings.save(replace(self.settings.load(), configured=True, proxy_enabled=False, selected_server=None))
 
+    def set_monitor_enabled(self, enabled: bool) -> None:
+        self.settings.save(replace(self.settings.load(), monitor_enabled=enabled))
+
     def add_server(self, uri: str, *, select: bool = True) -> Server:
         server = parse_vless(uri)
         self.proxy.validate(server)

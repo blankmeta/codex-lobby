@@ -13,6 +13,7 @@ HELP = """RunLobby — Your accounts. Your limits. One place.
   runlobby                           Same menu; full command name
   rlb resume                         Choose an account and continue a session
   rlb sessions                       Inspect local sessions and top actions
+  rlb monitor on|off                 Enable or disable the live side panel
   rlb setup                          Set up an optional VLESS connection
   rlb --help-all                     Show commands for scripts and integrations
 
@@ -38,6 +39,7 @@ HELP_ALL = """RunLobby — commands for scripts and integrations.
   rlb stop                           Stop this app's proxy
   rlb doctor                         Check dependencies and connection
   rlb resume                         Choose an account and continue a session
+  rlb monitor [on|off|status]         Configure the live side panel
   rlb -- <arguments>                 Pass arguments to the selected provider
 
   RUNLOBBY_LANG=ru rlb  Русский интерфейс
@@ -69,6 +71,21 @@ class CLI:
         language = self.app.settings.load().language
         if language and not any(os.environ.get(key) for key in ("RUNLOBBY_LANG", "CODEX_LOBBY_LANG", "CODEX_SWITCH_LANG")):
             c.ru = language == "ru"
+        if command == "monitor":
+            mode = args[1] if len(args) == 2 else "status" if len(args) == 1 else None
+            if mode not in ("on", "off", "status"):
+                raise SwitchError("Usage: rlb monitor [on|off|status]")
+            if mode != "status":
+                self.app.set_monitor_enabled(mode == "on")
+            enabled = self.app.settings.load().monitor_enabled
+            c.say("Live side panel: " + ("on" if enabled else "off"),
+                  "Панель статистики: " + ("включена" if enabled else "выключена"))
+            if mode != "status":
+                c.say("Saved for the next agent launch. Run: rlb", "Сохранено для следующего запуска агента. Запусти: rlb")
+            if enabled and os.environ.get("RUNLOBBY_MONITOR") == "0":
+                c.say("RUNLOBBY_MONITOR=0 overrides this setting in the current shell.",
+                      "RUNLOBBY_MONITOR=0 отключает панель в текущем терминале независимо от настройки.")
+            return 0
         if command == "tools":
             if len(args) != 3 or args[1] != "install":
                 raise SwitchError("Usage: rlb tools install codex|claude")

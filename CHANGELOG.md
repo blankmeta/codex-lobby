@@ -2,6 +2,7 @@
 
 ## 1.5.1
 
+- Add `rlb monitor on|off|status` and a persistent side-panel toggle in Settings. Turning it off bypasses the terminal renderer; toggling from the menu keeps keyboard focus on the setting.
 - Fix standalone builds recursively launching RunLobby when a configured tool is a Python script. Executable scripts use their shebang; other scripts require an external Python interpreter.
 - Exercise script overrides inside every packaged native build, in addition to source-level tests.
 

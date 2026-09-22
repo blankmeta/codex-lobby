@@ -306,23 +306,28 @@ class HomeMenu:
 
     def settings(self, entries):
         c = self.c
+        selected = None
         while True:
+            enabled = self.app.settings.load().monitor_enabled
+            monitor_label = c.text("Live side panel · ", "Панель статистики · ") + (
+                c.text("on", "включена") if enabled else c.text("off", "выключена"))
+            monitor_action = c.text("Enter: turn off", "Enter: выключить") if enabled else c.text("Enter: turn on", "Enter: включить")
             key = self.menu.choose(c.text("Settings", "Настройки"),
                                    [Option("project", c.text("Account for this project", "Аккаунт для этого проекта")),
-                                    Option("monitor", c.text("Live side panel · ", "Панель мониторинга · ") + c.text("on", "вкл") if self.app.settings.load().monitor_enabled else c.text("Live side panel · off", "Панель мониторинга · выкл")),
+                                    Option("monitor", monitor_label, (monitor_action,
+                                        c.text("Saved for new Codex and Claude launches.", "Сохраняется для следующих запусков Codex и Claude."))),
                                     Option("accounts", c.text("Manage accounts / continue a session", "Управлять аккаунтами / продолжить сессию")),
                                     Option("connection", c.text("Connection · optional VLESS", "Подключение · VLESS по желанию")),
                                     Option("tools", c.text("Install tools", "Установить инструменты")),
                                     Option("language", "Language / Язык"),
-                                    Option("back", c.text("Back to accounts", "К аккаунтам"))])
+                                    Option("back", c.text("Back to accounts", "К аккаунтам"))], selected)
             if key in (None, "back"):
                 return None
+            selected = key
             if key == "project":
                 self.choose_default(entries)
             elif key == "monitor":
-                from dataclasses import replace
-                current = self.app.settings.load()
-                self.app.settings.save(replace(current, monitor_enabled=not current.monitor_enabled))
+                self.app.set_monitor_enabled(not enabled)
             elif key == "connection":
                 self.connection.run()
             elif key == "tools":

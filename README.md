@@ -79,6 +79,7 @@ takes the right 20% of the terminal. No extra setup or model calls.
 - **Session history** — open **Sessions · activity analysis** to inspect previous work and recorded tool results.
 
 **F8** hides the panel; **F9** selects a session if it cannot be identified automatically.
+Use **Settings → Live side panel** or `rlb monitor off` / `rlb monitor on` to save your preference for future launches.
 Works through RunLobby's own PTY/ConPTY on macOS, Linux and Windows.
 
 The reader checks local logs every **250 ms**; counters update when the agent writes

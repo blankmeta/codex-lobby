@@ -42,7 +42,12 @@ them; a model response can finish before its usage is recorded.
 | F10 | Rank the top ten by calls, tokens or tool time |
 | Shift + Page Up / Down | Scroll the agent pane on terminals that send these sequences |
 | Sessions · activity analysis | Browse sessions, categories and recorded tool results |
-| Settings → Live activity panel | Turn the panel off or on for future launches |
+| Settings → Live side panel | Press Enter to turn the panel off or on for future launches |
+
+To save the setting directly, use `rlb monitor off` or `rlb monitor on`.
+`rlb monitor` shows the saved state. Turning it off starts the normal agent
+process, bypassing the panel's terminal renderer. Existing sessions keep their
+current view until you restart them. F8 only hides the panel in the current view.
 
 On keyboards with media keys, use **Fn + F8/F9/F10**. `RUNLOBBY_MONITOR=0`
 disables the panel for one launch. Redirected input/output and `TERM=dumb` use

@@ -32,6 +32,16 @@ class Choices:
 
 
 class HomeTests(unittest.TestCase):
+    def test_monitor_setting_keeps_focus_and_shows_the_new_state(self):
+        home,app,events,menu=self.make_home('monitor','ENTER','back')
+        before=app.settings.load()
+        home.settings([])
+        self.assertEqual(app.settings.load(),before)
+        self.assertEqual(menu.visits[1][2],'monitor')
+        label=next(o.label for o in menu.visits[1][1] if o.key=='monitor')
+        self.assertIn('off',label)
+        self.assertEqual(events,[])
+
     def test_weekly_only_account_has_dash_in_five_hour_column(self):
         home, app, _, menu = self.make_home(None)
         app.profiles.inspect.return_value = replace(

@@ -2,11 +2,14 @@ import json
 from pathlib import Path
 import tempfile
 import unittest
+from unittest.mock import Mock, patch
+from types import SimpleNamespace
 
 from codex_switch.domain.activity import Activity, Action, ModelStep, Tokens, classify, command_category
 from codex_switch.infrastructure.activity_logs import LogParser, LogTail, SessionFollower, SessionTree, safe_text
 from codex_switch.infrastructure.virtual_screen import VirtualScreen
-from codex_switch.infrastructure.live_runner import InputRouter, layout
+from codex_switch.infrastructure.live_runner import InputRouter, LiveRunner, layout
+from codex_switch.domain.models import Preferences
 from codex_switch.presentation.activity import panel_lines
 
 
@@ -162,6 +165,15 @@ class LogTests(unittest.TestCase):
 
 
 class ScreenTests(unittest.TestCase):
+    def test_disabled_monitor_bypasses_the_terminal_wrapper(self):
+        settings=SimpleNamespace(load=lambda:Preferences(True,monitor_enabled=False))
+        terminal=Mock();run=Mock(return_value=SimpleNamespace(returncode=0))
+        env={'TERM':'xterm-256color'}
+        with patch('sys.stdin.isatty',return_value=True), patch('sys.stdout.isatty',return_value=True), patch('codex_switch.infrastructure.live_runner.spawn_terminal') as spawn:
+            LiveRunner(settings,terminal,runner=run)(['codex'],env=env,pass_fds=(17,))
+        run.assert_called_once_with(['codex'],env=env,pass_fds=(17,))
+        spawn.assert_not_called();terminal.session.assert_not_called()
+
     def test_alternate_screen_unicode_and_terminal_replies(self):
         replies=[];s=VirtualScreen(20,5,replies.append)
         s.feed('Привет 界'.encode());before=s.primary.display[:]
