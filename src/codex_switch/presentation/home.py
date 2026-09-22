@@ -61,8 +61,8 @@ class HomeMenu:
         c, options = self.c, []
         for entry in entries:
             a = entry.account
-            primary = remaining(a.primary, a.updated_at) if a else "—"
-            weekly = remaining(a.secondary, a.updated_at) if a else "—"
+            primary = remaining(a.five_hour, a.updated_at) if a else "—"
+            weekly = remaining(a.weekly, a.updated_at) if a else "—"
             state = ""
             if entry.running:
                 state = c.text(" · open", " · открыт")

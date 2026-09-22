@@ -26,6 +26,19 @@ class Account:
     updated_at: int | None = None
     needs_login: bool = False
 
+    def window_for(self, minutes: int) -> UsageWindow | None:
+        """Provider window order does not identify its duration or subscription."""
+        return next((window for window in (self.primary, self.secondary)
+                     if window is not None and window.minutes == minutes), None)
+
+    @property
+    def five_hour(self) -> UsageWindow | None:
+        return self.window_for(300)
+
+    @property
+    def weekly(self) -> UsageWindow | None:
+        return self.window_for(10080)
+
 
 @dataclass(frozen=True)
 class Server:

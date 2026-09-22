@@ -32,6 +32,14 @@ class Choices:
 
 
 class HomeTests(unittest.TestCase):
+    def test_weekly_only_account_has_dash_in_five_hour_column(self):
+        home, app, _, menu = self.make_home(None)
+        app.profiles.inspect.return_value = replace(
+            self.work, account=replace(self.work.account, primary=UsageWindow(35, 10080)))
+        home.run()
+        label = next(o.label for o in menu.visits[0][1] if o.key == "profile:work")
+        self.assertRegex(label, r"Codex\s+—\s+65%")
+
     def make_home(self, *choices, answers=()):
         app, events = application()
         app.profiles, app.projects = Mock(), Mock()

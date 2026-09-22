@@ -33,8 +33,8 @@ def status_line(profiles, bound):
     if selected.problem or not selected.account or selected.account.needs_login:
         return f"{selected.provider.capitalize()} {selected.name}: check login"
     account = selected.account
-    primary = f"{account.primary.remaining}%" if account.primary else "?"
-    weekly = f"{account.secondary.remaining}%" if account.secondary else "?"
+    primary = f"{account.five_hour.remaining}%" if account.five_hour else "—"
+    weekly = f"{account.weekly.remaining}%" if account.weekly else "—"
     running = " running" if selected.running else ""
     return f"{selected.provider.capitalize()} {selected.name}: 5h {primary} / week {weekly}{running} (snapshot)"
 

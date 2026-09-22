@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.4.2
+
+- Match usage columns to the reported window duration. Weekly-only accounts show a dash under 5h and their actual weekly balance under Week, including saved profiles and reset times.
+
 ## 1.4.1
 
 - Install the standalone macOS build through Homebrew, without upgrading global Node, Python or Xray packages. This avoids compiler dependencies on macOS 14.

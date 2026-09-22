@@ -37,7 +37,7 @@ def resets(account, ru=False, now=None):
     now = time.time() if now is None else now
     parts = []
     if account:
-        for label, window in (("5 ч" if ru else "5h", account.primary), ("Неделя" if ru else "Week", account.secondary)):
+        for label, window in (("5 ч" if ru else "5h", account.five_hour), ("Неделя" if ru else "Week", account.weekly)):
             if window and window.resets_at:
                 value = ("обнови данные" if ru else "refresh needed") if window.resets_at <= now else duration(window.resets_at - now, ru)
                 parts.append(f"{label}: {value}")

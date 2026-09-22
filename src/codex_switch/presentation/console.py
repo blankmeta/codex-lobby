@@ -49,8 +49,8 @@ class Console:
             self.write(f"  {i}. {active} {account.name}  [{account.plan}]")
             if account.email != account.name:
                 self.write(f"       {account.email}")
-            primary = f"{account.primary.remaining}%" if account.primary else "—"
-            secondary = f"{account.secondary.remaining}%" if account.secondary else "—"
+            primary = f"{account.five_hour.remaining}%" if account.five_hour else "—"
+            secondary = f"{account.weekly.remaining}%" if account.weekly else "—"
             self.say(f"       Remaining: 5h {primary} · Weekly {secondary}", f"       Осталось: 5 ч {primary} · Неделя {secondary}")
             if account.needs_login:
                 self.say("       Sign in again: runlobby login", "       Нужен повторный вход: runlobby login")
@@ -88,8 +88,8 @@ class Console:
                 state = self.text("needs attention", "нужно проверить")
             self.write(f"  {index}. {marker} {profile.name} · {state}")
             if account:
-                primary = f"{account.primary.remaining}%" if account.primary else "—"
-                weekly = f"{account.secondary.remaining}%" if account.secondary else "—"
+                primary = f"{account.five_hour.remaining}%" if account.five_hour else "—"
+                weekly = f"{account.weekly.remaining}%" if account.weekly else "—"
                 self.write(f"       {account.email} [{account.plan}]")
                 self.say(f"       Remaining: 5h {primary} · Weekly {weekly}", f"       Осталось: 5 ч {primary} · Неделя {weekly}")
                 date = datetime.fromtimestamp(account.updated_at).strftime("%d %b %H:%M") if account.updated_at else "—"
