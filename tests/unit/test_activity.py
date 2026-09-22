@@ -4,7 +4,7 @@ import tempfile
 import unittest
 
 from codex_switch.domain.activity import Activity, Action, ModelStep, Tokens, classify, command_category
-from codex_switch.infrastructure.activity_logs import LogParser, LogTail, SessionFollower, safe_text
+from codex_switch.infrastructure.activity_logs import LogParser, LogTail, SessionFollower, SessionTree, safe_text
 from codex_switch.infrastructure.virtual_screen import VirtualScreen
 from codex_switch.infrastructure.live_runner import InputRouter, layout
 from codex_switch.presentation.activity import panel_lines
@@ -46,6 +46,47 @@ class ClassificationTests(unittest.TestCase):
 
 
 class LogTests(unittest.TestCase):
+    def test_repetition_uses_all_arguments_without_exposing_them(self):
+        p = LogParser('codex')
+        for key,path in [('a','first.py'),('b','second.py'),('c','first.py')]:
+            p._action(key,'Read',{'file_path':path},1)
+            p._result(key,'same content',2)
+        self.assertNotEqual(p.activity.actions['a'].fingerprint,p.activity.actions['b'].fingerprint)
+        self.assertEqual(p.activity.actions['a'].fingerprint,p.activity.actions['c'].fingerprint)
+
+    def test_session_tree_deduplicates_copied_history_and_follows_children(self):
+        with tempfile.TemporaryDirectory() as folder:
+            home=Path(folder); directory=home/'sessions'; directory.mkdir()
+            shared=codex('event_msg',{'type':'token_count','info':{'total_token_usage':{'input_tokens':100},'last_token_usage':{'input_tokens':100}}})
+            def write(name,identity,parent=None,records=()):
+                meta={'id':identity,'cwd':folder}
+                if parent: meta['source']={'subagent':{'thread_spawn':{'parent_thread_id':parent}}}
+                path=directory/name
+                path.write_text('\n'.join(json.dumps(r) for r in [codex('session_meta',meta),*records])+'\n')
+                return path
+            root=write('root.jsonl','root',records=[shared])
+            child=write('child.jsonl','child','root',[shared,codex('token_usage_record',{'response_id':'child-r','usage':{'input_tokens':20}})])
+            write('unrelated.jsonl','unrelated',records=[codex('token_usage_record',{'response_id':'other-r','usage':{'input_tokens':999}})])
+            tree=SessionTree(LogTail(root,'codex'),home)
+            report=tree.poll()
+            self.assertEqual(report.tokens.total,120)
+            self.assertEqual(report.subagents,1)
+            with child.open('a') as f:
+                f.write(json.dumps(codex('token_usage_record',{'response_id':'next-r','usage':{'input_tokens':30}},'2026-09-22T12:00:02Z'))+'\n')
+            updated=tree.poll()
+            self.assertEqual(updated.tokens.total,150)
+            self.assertGreater(updated.updated_at,report.updated_at)
+
+    def test_claude_child_logs_are_local_to_the_selected_session(self):
+        with tempfile.TemporaryDirectory() as folder:
+            home=Path(folder); project=home/'projects'/'demo'; project.mkdir(parents=True)
+            root=project/'root.jsonl';root.write_text('{}\n')
+            sub=project/'root'/'subagents';sub.mkdir(parents=True)
+            (sub/'agent.jsonl').write_text(json.dumps({'type':'assistant','sessionId':'root','message':{'id':'m','usage':{'input_tokens':10},'content':[]}})+'\n')
+            report=SessionTree(LogTail(root,'claude'),home).poll()
+            self.assertEqual(report.tokens.total,10)
+            self.assertEqual(report.subagents,1)
+
     def test_modern_codex_nested_operations_and_duplicate_usage(self):
         p=LogParser('codex');usage={'input_tokens':100,'output_tokens':20,'cached_input_tokens':70,'reasoning_output_tokens':5}
         records=[

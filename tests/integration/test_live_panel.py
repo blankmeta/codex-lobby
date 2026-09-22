@@ -19,6 +19,28 @@ def receive(process, needle, timeout=12):
 
 
 class NativePanelTests(unittest.TestCase):
+    def test_account_lease_outlives_the_wrapper_scope(self):
+        from codex_switch.infrastructure.platforms import current_platform
+        locks = current_platform().locks
+        with tempfile.TemporaryDirectory() as folder:
+            path = Path(folder)/'account.lock'
+            process = None
+            try:
+                with locks.acquire(path) as lease:
+                    with lease.child_options() as options:
+                        process = spawn_terminal([sys.executable,'-c',"print('READY',flush=True);input()"],
+                                                 dict(os.environ),25,90,**options)
+                    receive(process,b'READY')
+                with self.assertRaises(BlockingIOError):
+                    with locks.acquire(path): pass
+                process.write(b'\r')
+                end = time.monotonic()+5
+                while process.poll() is None and time.monotonic()<end: process.read(.02)
+                self.assertEqual(process.poll(),0)
+                with locks.acquire(path): pass
+            finally:
+                if process: process.close()
+
     def test_pty_input_resize_and_exit_status(self):
         script="import os,sys;print('READY',os.isatty(0),flush=True);v=input();s=os.get_terminal_size();print('GOT',v,s.columns,s.lines,flush=True);sys.exit(7)"
         process=spawn_terminal([sys.executable,'-c',script],dict(os.environ),25,90)

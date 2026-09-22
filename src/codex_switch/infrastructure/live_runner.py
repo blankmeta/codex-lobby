@@ -68,7 +68,8 @@ class LiveRunner:
         child = spawn_terminal(command, env, rows, left, **options)
         follower.pid = child.pid
         try:
-            return subprocess.CompletedProcess(command, self._loop(child, follower, settings.language == "ru"))
+            language = env.get("RUNLOBBY_LANG", settings.language)
+            return subprocess.CompletedProcess(command, self._loop(child, follower, language == "ru"))
         finally: child.close()
 
     def _loop(self, child, follower, ru):

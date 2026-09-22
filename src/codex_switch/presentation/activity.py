@@ -35,14 +35,15 @@ def panel_lines(activity, width, height, ru=False, *, now=None, ambiguous=False,
     age = max(0, (time.time() if now is None else now) - activity.updated_at) if activity.updated_at else None
     lines += [tr("Last event ", "Событие ") + elapsed(age), "",
               tr("Top actions · ", "Топ действий · ") + tr(sort, {"calls":"вызовы","tokens":"токены","seconds":"время"}[sort])]
-    rows = sorted(activity.totals(), key=lambda r: (r[sort],r["calls"]), reverse=True)[:10]
+    totals = activity.totals()
+    rows = sorted(totals, key=lambda r: (r[sort],r["calls"]), reverse=True)[:10]
     for row in rows:
         value = elapsed(row["seconds"]) if sort == "seconds" and row["timed_calls"] else "—" if sort == "seconds" else compact(row[sort])
         name = clipped(label(row["category"], ru), max(1, width-len(value)-1))
         lines.append(name + " " * max(1,width-len(name)-len(value)) + value)
     if not rows: lines.append(tr("No recorded actions", "Действий пока нет"))
-    repeats = sum(r["repeats"] for r in rows)
-    errors = sum(r["errors"] for r in rows)
+    repeats = sum(r["repeats"] for r in totals)
+    errors = sum(r["errors"] for r in totals)
     if repeats or errors: lines += ["", tr("Repeats ", "Повторы ")+str(repeats)+tr(" · errors "," · ошибки ")+str(errors)]
     if activity.malformed: lines += [tr("Skipped records: ", "Пропущено записей: ") + str(activity.malformed)]
     lines += ["", tr("F8 hide · F9 session", "F8 скрыть · F9 сессия"), tr("F10 sort", "F10 сортировка")]

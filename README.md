@@ -69,6 +69,22 @@ See remaining five-hour and weekly limits beside each account, with reset times 
 
 For proxy access before your first sign-in, choose **Set up connection / paste VLESS** on the opening screen.
 
+## See what your agent is doing
+
+Choose an account and start. Your agent opens on the left; a **live activity panel**
+takes the right 20% of the terminal. No extra setup or model calls.
+
+- **Top ten actions** — see whether the session is reading code, editing, testing or checking CI.
+- **Tokens, cache and tool time** — switch the ranking with **F10**.
+- **Session history** — open **Sessions · activity analysis** to inspect previous work and recorded tool results.
+
+**F8** hides the panel; **F9** selects a session if it cannot be identified automatically.
+Works through RunLobby's own PTY/ConPTY on macOS, Linux and Windows.
+
+The reader checks local logs every **250 ms**; counters update when the agent writes
+an event. Token totals include cache and are separate from subscription limits.
+[How actions are classified and counted →](docs/activity-methodology.md)
+
 <details>
 <summary>Existing accounts, sessions & compatibility</summary>
 

@@ -1,5 +1,6 @@
 """Build standalone launchers; no Python installation required by users."""
 import hashlib
+from importlib.metadata import distribution
 import os
 from pathlib import Path
 import shutil
@@ -18,6 +19,15 @@ for name in ("rlb", "codex-lobby", "cxl", "codex-switch", "codex-vpn", "codex-pr
 for name in ("LICENSE", "README.md", "CHANGELOG.md"):
     shutil.copy2(name, bundle / name)
 shutil.copytree("docs", bundle / "docs", dirs_exist_ok=True)
+for dependency in ["pyte", "wcwidth", "psutil", *(["pywinpty"] if os.name == "nt" else [])]:
+    package = distribution(dependency)
+    for item in package.files or []:
+        if any("license" in part.lower() or "copying" in part.lower() for part in item.parts):
+            origin = Path(package.locate_file(item))
+            if origin.is_file():
+                destination = bundle / "licenses" / dependency / item.name
+                destination.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copy2(origin, destination)
 archive_name = f"runlobby-{__version__}-{platform_key()}"
 archive = Path(shutil.make_archive(str(Path("dist") / archive_name), "zip" if os.name == "nt" else "gztar", "dist", "runlobby"))
 archive.with_name(archive.name + ".sha256").write_text(hashlib.sha256(archive.read_bytes()).hexdigest() + "  " + archive.name + "\n")

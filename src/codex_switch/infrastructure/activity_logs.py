@@ -55,6 +55,7 @@ class LogParser:
         self.usage_totals = set()
         self.completed_ids = set()
         self.serial = 0
+        self.argument_hashes = {}
 
     def feed(self, row):
         if not isinstance(row, dict): return
@@ -73,6 +74,7 @@ class LogParser:
         command = arguments.get("cmd", arguments.get("command", "")) if isinstance(arguments, dict) else arguments
         if isinstance(command, list): command = " ".join(str(x) for x in command)
         self.activity.actions[key] = Action(key, tool, classify(tool, arguments), safe_text(command), timestamp=now)
+        self.argument_hashes[key] = hashlib.sha256(json.dumps(arguments, ensure_ascii=False, sort_keys=True).encode()).hexdigest()
 
     def _result(self, key, value, now, failed=False, duration=None):
         action = self.activity.actions.get(key)
@@ -83,7 +85,7 @@ class LogParser:
         action.seconds = duration if duration is not None else max(0, now - action.timestamp) if now and action.timestamp else None
         # Repetition means identical tool, arguments and recorded result. It is
         # not a claim of wasted work, nor fuzzy similarity between status dumps.
-        action.fingerprint = hashlib.sha256((action.tool + "\0" + action.command + "\0" + raw).encode()).hexdigest()
+        action.fingerprint = hashlib.sha256((action.tool + "\0" + self.argument_hashes[key] + "\0" + raw).encode()).hexdigest()
 
     def _step(self, key, usage):
         if key in self.activity.steps: return
@@ -136,7 +138,8 @@ class LogParser:
                     signature = tuple(tokens(total, "codex").__dict__.values())
                     if signature not in self.usage_totals:
                         self.usage_totals.add(signature)
-                        self._step("legacy:" + str(self.serial), tokens(last, "codex"))
+                        identity = hashlib.sha256(json.dumps(row, sort_keys=True).encode()).hexdigest()
+                        self._step("legacy:" + identity, tokens(last, "codex"))
             elif subtype == "item_completed": self._completed(data, now)
 
     def _completed(self, data, now):
@@ -333,14 +336,14 @@ class SessionTree:
                             descendants.add(identity); changed = True
                             self.children.setdefault(path,LogTail(path,"codex"))
         actions = dict(root.actions); steps = dict(root.steps); count = 0; malformed = root.malformed
+        updated_at = root.updated_at
         for child in self.children.values():
             try: item = child.poll()
             except OSError: continue
             count += 1; malformed += item.malformed
+            if item.updated_at: updated_at = max(updated_at or item.updated_at, item.updated_at)
             for key,action in item.actions.items(): actions.setdefault(key,action)
             for key,step in item.steps.items():
-                # Provider response/message IDs survive transcript copies. Legacy
-                # counters have only local ordinals and need a session namespace.
-                identity = item.session_id + ":" + key if key.startswith("legacy:") else key
-                steps.setdefault(identity,step)
-        return replace(root,actions=actions,steps=steps,subagents=count,malformed=malformed)
+                # Response IDs and legacy record hashes survive copied history.
+                steps.setdefault(key,step)
+        return replace(root,actions=actions,steps=steps,subagents=count,malformed=malformed,updated_at=updated_at)

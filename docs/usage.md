@@ -28,6 +28,36 @@ Removing an added account requires confirmation and deletes its saved sign-in an
 
 The picker shows remaining five-hour and weekly allowances. The selected row shows data age and available reset countdowns. Missing data appears as `—`; `?` means the saved window has passed its reset time and needs refreshing. Percentages describe usage windows, not a token balance. Choose **Refresh limits** to request Codex data. Claude snapshots arrive while Claude runs; `/usage` inside Claude provides its current view. Open accounts keep their saved snapshots. An exhausted snapshot offers refresh, another account, or an explicit launch anyway.
 
+## Live activity and sessions
+
+Starting an account opens the agent on the left and a local monitor on the right
+20% of the terminal. It reads appended session events every 250 ms without sending
+prompts or using an LLM. Events and usage become visible when the provider writes
+them; a model response can finish before its usage is recorded.
+
+| Key / menu | Action |
+| --- | --- |
+| F8 | Hide or show the panel |
+| F9 | Choose the session to monitor |
+| F10 | Rank the top ten by calls, tokens or tool time |
+| Shift + Page Up / Down | Scroll the agent pane on terminals that send these sequences |
+| Sessions · activity analysis | Browse sessions, categories and recorded tool results |
+| Settings → Live activity panel | Turn the panel off or on for future launches |
+
+On keyboards with media keys, use **Fn + F8/F9/F10**. `RUNLOBBY_MONITOR=0`
+disables the panel for one launch. Redirected input/output and `TERM=dumb` use
+the ordinary agent process. No terminal-specific plugin or multiplexer is needed.
+
+Session history starts with the current project; choose all projects to broaden
+the list. Linked subagent logs are included, while copied response records are
+deduplicated. If several active logs match a launch, the panel asks for F9
+selection. It never changes the active account.
+
+Token totals include cached input. Category totals associate model requests with
+their recorded calls; mixed requests stay mixed. They are not measured per-command
+costs or subscription percentages. Unknown values appear as `—`.
+[Sources, counting rules and limitations](activity-methodology.md).
+
 ## Commands
 
 Commands remain available for scripts. `accounts` shows both added and original accounts. `profiles` and the versioned JSON contract describe added accounts only. In legacy mode, `switch` changes the shared active account.
@@ -47,6 +77,7 @@ Commands remain available for scripts. `accounts` shows both added and original 
 | Refresh limits from OpenAI | `runlobby accounts --refresh` |
 | Choose a default profile for this project | `runlobby switch` |
 | Choose an account and resume work | `runlobby resume` |
+| Inspect sessions and recorded activity | `rlb sessions` |
 | Set up or change the connection | `runlobby setup` |
 | Check installation and connectivity | `runlobby doctor` |
 | Stop the proxy, keeping saved settings | `runlobby stop` |

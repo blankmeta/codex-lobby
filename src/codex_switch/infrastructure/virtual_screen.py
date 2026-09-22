@@ -1,6 +1,5 @@
 """VT screen composition keeps the agent's cursor and escape codes in its pane."""
 import codecs
-import copy
 import re
 
 import pyte
@@ -30,6 +29,8 @@ class VirtualScreen:
         return (lambda *a, **k: getattr(self.current, name)(*a, **k)) if callable(value) else value
 
     def set_mode(self, *modes, **kwargs):
+        # The compositor owns pane geometry; DECCOLM must not resize it to 132.
+        if kwargs.get("private"): modes = tuple(m for m in modes if m != 3)
         if kwargs.get("private"):
             for mode in modes:
                 if mode in (47, 1047, 1049):
@@ -42,6 +43,7 @@ class VirtualScreen:
         self.current.dirty.update(range(self.lines))
 
     def reset_mode(self, *modes, **kwargs):
+        if kwargs.get("private"): modes = tuple(m for m in modes if m != 3)
         if kwargs.get("private"):
             for mode in modes:
                 if mode in (47, 1047, 1049): self.current = self.primary

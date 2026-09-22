@@ -54,7 +54,7 @@ replace that wrapper in the action count; both are never counted together.
   calls have that category. Otherwise its tokens go to "Mixed actions". A response
   with no linked calls goes to "No tool call". This associates requests with
   observable actions; it does **not** isolate a command's causal token cost.
-- **Repeated results**: identical recorded tool, command and result. Repetition is
+- **Repeated results**: identical recorded tool, arguments and result. Repetition is
   not automatically waste; it can be required polling. Missing results don't count.
 
 Subscription allowance and API-equivalent price cannot be recovered reliably from
@@ -77,3 +77,10 @@ instead of silently attributing another terminal's activity to this one.
 The side pane is built into RunLobby. It uses a PTY on macOS/Linux, ConPTY on
 Windows, and a virtual terminal screen for composition. It does not depend on a
 particular terminal application or an external terminal multiplexer.
+
+Linked subagent logs join the selected session using Codex parent-thread metadata
+or Claude's per-session subagent directory. Discovery runs every two seconds;
+already discovered logs are read every 250 ms. Provider response IDs and hashes of
+legacy usage records prevent counting copied history twice. Missing or deleted
+logs cannot contribute statistics. Unsupported terminal extensions such as inline
+images are not rendered by the virtual screen.

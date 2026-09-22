@@ -60,10 +60,19 @@ class PosixPty:
 
 
 class WindowsPty:
-    def __init__(self, command, env, rows, columns, **kwargs):
+    def __init__(self, command, env, rows, columns, startupinfo=None, **kwargs):
+        import codecs
         from winpty import PtyProcess
+        from .windows import transfer_leases
         self.process = PtyProcess.spawn(command, env=env, dimensions=(rows, columns), backend="0")
         self.pid = self.process.pid
+        self.decoder = codecs.getincrementaldecoder("utf-8")("replace")
+        try:
+            attributes = getattr(startupinfo, "lpAttributeList", None) or {}
+            transfer_leases(self.pid, attributes.get("handle_list", []))
+        except BaseException:
+            self.process.close(force=True)
+            raise
 
     def read(self, timeout=.02):
         if select.select([self.process.fileobj], [], [], timeout)[0]:
@@ -71,7 +80,9 @@ class WindowsPty:
             except EOFError: return b""
         return b""
 
-    def write(self, data): self.process.write(data.decode("utf-8", errors="replace"))
+    def write(self, data):
+        text = self.decoder.decode(data)
+        if text: self.process.write(text)
     def resize(self, rows, columns): self.process.setwinsize(rows, columns)
     def poll(self): return None if self.process.isalive() else self.process.exitstatus or 0
     def close(self): self.process.close(force=True)
@@ -99,6 +110,9 @@ def read_input(timeout=.02):
         if key in ("\x00", "\xe0"):
             key = {"H":"\x1b[A", "P":"\x1b[B", "K":"\x1b[D", "M":"\x1b[C",
                    "G":"\x1b[H", "O":"\x1b[F", "S":"\x1b[3~", "I":"\x1b[5~", "Q":"\x1b[6~",
-                   "B":"\x1b[19~"}.get(msvcrt.getwch(), "")
+                   "R":"\x1b[2~", ";":"\x1bOP", "<":"\x1bOQ", "=":"\x1bOR", ">":"\x1bOS",
+                   "?":"\x1b[15~", "@":"\x1b[17~", "A":"\x1b[18~", "B":"\x1b[19~",
+                   "C":"\x1b[20~", "D":"\x1b[21~", "\x85":"\x1b[23~", "\x86":"\x1b[24~",
+                   "s":"\x1b[1;5D", "t":"\x1b[1;5C", "\x0f":"\x1b[Z"}.get(msvcrt.getwch(), "")
         result += key
     return result.encode("utf-16", errors="surrogatepass").decode("utf-16", errors="replace").encode("utf-8")

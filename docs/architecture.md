@@ -44,6 +44,24 @@ Sign-in uses a staging directory and checks the account identity before publishi
 
 Status uses a saved metadata snapshot when a profile is locked. A malformed profile becomes an error row instead of hiding other profiles. JSON schema version 1 exposes account display data and usage, never raw credentials.
 
+## Session observation
+
+`domain/activity.py` contains deterministic classification and accounting rules.
+`SessionAnalysis` consumes a session repository port; local adapters tail Codex
+and Claude JSONL and link subagents. They never execute transcript commands or
+call a model. Presentation shares the same category labels and statistics between
+the history menu and the live panel.
+
+`LiveRunner` wraps agent launches only. POSIX PTY and Windows ConPTY adapters
+transport terminal bytes behind `PseudoTerminal`; the virtual screen composes
+the agent with a separate sidebar. Account locks remain held by the agent child:
+POSIX inherits the descriptor, while ConPTY receives a duplicated Win32 handle.
+Authentication and usage-fetch subprocesses keep their ordinary execution path.
+
+Native integration tests launch actual PTY/ConPTY children, send input, resize
+the terminal, check exit status and account leases, and append synthetic logs
+while the panel runs. No user credentials or paid model calls are needed.
+
 ## Tests
 
 The pyramid consists of fast unit tests for domain rules and use cases, adapter contract tests with controlled subprocess results, filesystem and real dependency integration tests, and complete CLI scenarios with substitute external binaries. Managed-profile tests cover two simultaneous subprocesses, wrapper termination with a surviving child, cancelled/wrong-account sign-in, duplicate identities, private storage, and project bindings.

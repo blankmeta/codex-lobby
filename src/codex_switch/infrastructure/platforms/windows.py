@@ -59,6 +59,35 @@ class WindowsLocks:
             api.CloseHandle(handle)
 
 
+def transfer_leases(pid, handles):
+    """ConPTY disables inheritance; duplicate only account leases into its child.
+
+    The remote handle needs no application cooperation: Windows closes it when
+    the child exits, preserving the lease even if RunLobby is terminated first.
+    """
+    if not handles:
+        return
+    api = kernel()
+    api.OpenProcess.argtypes = [wintypes.DWORD, wintypes.BOOL, wintypes.DWORD]
+    api.OpenProcess.restype = wintypes.HANDLE
+    api.GetCurrentProcess.restype = wintypes.HANDLE
+    api.DuplicateHandle.argtypes = [wintypes.HANDLE, wintypes.HANDLE, wintypes.HANDLE,
+                                   ctypes.POINTER(wintypes.HANDLE), wintypes.DWORD,
+                                   wintypes.BOOL, wintypes.DWORD]
+    api.DuplicateHandle.restype = wintypes.BOOL
+    target = api.OpenProcess(0x40, False, pid)  # PROCESS_DUP_HANDLE
+    if not target:
+        raise ctypes.WinError(ctypes.get_last_error())
+    try:
+        for handle in handles:
+            remote = wintypes.HANDLE()
+            if not api.DuplicateHandle(api.GetCurrentProcess(), handle, target,
+                                       ctypes.byref(remote), 0, False, 2):
+                raise ctypes.WinError(ctypes.get_last_error())
+    finally:
+        api.CloseHandle(target)
+
+
 class WindowsTerminal:
     @contextmanager
     def session(self):
