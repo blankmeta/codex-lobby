@@ -54,9 +54,10 @@ def cached_account(data) -> Account:
 
 
 class LocalProfiles:
-    def __init__(self, directory: Path, runner=subprocess.run, auth_factory=CodexAuth, codex_binary=None, providers=None, locks=None):
+    def __init__(self, directory: Path, runner=subprocess.run, auth_factory=CodexAuth, codex_binary=None, providers=None, locks=None, launch_runner=None):
         self.directory = directory / "profiles"
         self.runner, self.auth_factory, self.codex_binary = runner, auth_factory, codex_binary
+        self.launch_runner = launch_runner or runner
         self.locks = locks or current_platform().locks
         self.providers = providers or ProviderRegistry([CodexProvider(auth_factory, codex_binary), ClaudeProvider()])
 
@@ -262,5 +263,5 @@ class LocalProfiles:
                 raise SwitchError("Choose Sign in again for this account.")
             home = self.runtime_home(name)
             with lock.child_options() as child_options:
-                result = self.runner(provider.launch_command(home, args), env=provider.environment(home, proxy), **child_options)
+                result = self.launch_runner(provider.launch_command(home, args), env=provider.environment(home, proxy), **child_options)
             return result.returncode

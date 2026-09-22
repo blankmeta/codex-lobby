@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.5.0
+
+- Show a live local activity panel beside Codex and Claude by default, using built-in PTY/ConPTY support across macOS, Linux and Windows. F8 toggles the panel; F9 selects the monitored session; F10 changes ranking.
+- Analyze recorded actions and token usage without model calls, including linked subagent histories. Deduplicate provider usage records and show mixed requests separately.
+- Add session history with top action categories, recorded commands, durations, errors and repeated results. Document classification sources and accounting limits.
+
 ## 1.4.2
 
 - Match usage columns to the reported window duration. Weekly-only accounts show a dash under 5h and their actual weekly balance under Week, including saved profiles and reset times.

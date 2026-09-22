@@ -78,6 +78,7 @@ class HomeMenu:
             options.append(Option(entry.id, label, self.details(entry), account_actions=True))
         options += [Option("add", c.text("+ Add account", "+ Добавить аккаунт"),
                            (c.text("Sign in in your browser. No name or configuration required.", "Войди в браузере. Придумывать имя и настраивать файлы не нужно."),)),
+                    Option("sessions", c.text("Sessions · activity analysis", "Сессии · анализ действий")),
                     *([Option("resume", c.text("Continue a saved session", "Продолжить сохранённую сессию")),
                        Option("refresh", c.text("Refresh limits", "Обновить лимиты"))] if entries else
                       [Option("connection", c.text("Set up connection / paste VLESS", "Настроить подключение / вставить VLESS"))]),
@@ -160,6 +161,9 @@ class HomeMenu:
                     if result is not None:
                         return result
                     entries = self.snapshot()
+                elif key == "sessions":
+                    from .sessions import SessionMenu
+                    SessionMenu(self.app, c, self.menu).run()
                 elif key == "connection":
                     self.connection.run()
                 elif key == "resume":
@@ -305,6 +309,7 @@ class HomeMenu:
         while True:
             key = self.menu.choose(c.text("Settings", "Настройки"),
                                    [Option("project", c.text("Account for this project", "Аккаунт для этого проекта")),
+                                    Option("monitor", c.text("Live side panel · ", "Панель мониторинга · ") + c.text("on", "вкл") if self.app.settings.load().monitor_enabled else c.text("Live side panel · off", "Панель мониторинга · выкл")),
                                     Option("accounts", c.text("Manage accounts / continue a session", "Управлять аккаунтами / продолжить сессию")),
                                     Option("connection", c.text("Connection · optional VLESS", "Подключение · VLESS по желанию")),
                                     Option("tools", c.text("Install tools", "Установить инструменты")),
@@ -314,6 +319,10 @@ class HomeMenu:
                 return None
             if key == "project":
                 self.choose_default(entries)
+            elif key == "monitor":
+                from dataclasses import replace
+                current = self.app.settings.load()
+                self.app.settings.save(replace(current, monitor_enabled=not current.monitor_enabled))
             elif key == "connection":
                 self.connection.run()
             elif key == "tools":

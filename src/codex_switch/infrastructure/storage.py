@@ -76,7 +76,7 @@ class JsonSettings:
             return Preferences(True, True, servers[0].id) if servers else Preferences()
         try:
             settings = Preferences(**data)
-            if type(settings.configured) is not bool or type(settings.proxy_enabled) is not bool:
+            if type(settings.configured) is not bool or type(settings.proxy_enabled) is not bool or type(settings.monitor_enabled) is not bool:
                 raise ValueError()
             if settings.language not in (None, "en", "ru"):
                 raise ValueError()

@@ -12,6 +12,9 @@ from .infrastructure.tools import NativeTools
 from .application.providers import ProviderRegistry
 from .infrastructure.providers.codex import CodexProvider
 from .infrastructure.providers.claude import ClaudeProvider
+from .infrastructure.live_runner import LiveRunner
+from .infrastructure.sessions import LocalSessions
+from .application.session_analysis import SessionAnalysis
 
 
 def build_application() -> SwitchApplication:
@@ -23,4 +26,5 @@ def build_application() -> SwitchApplication:
     settings = JsonSettings(directory, servers)
     port = int(os.environ.get("CODEX_PROXY_PORT", "10810"))
     tools = NativeTools(directory)
-    return SwitchApplication(settings, servers, CodexAuth(), XrayProxy(directory, port, legacy, tools=tools, processes=platform.processes, locks=platform.locks), CodexProcess(), ProcessDiagnostics(), LocalProfiles(directory, providers=ProviderRegistry([CodexProvider(), ClaudeProvider()]), locks=platform.locks), JsonProjects(directory, locks=platform.locks), tools=tools)
+    profiles = LocalProfiles(directory, providers=ProviderRegistry([CodexProvider(), ClaudeProvider()]), locks=platform.locks, launch_runner=LiveRunner(settings, platform.terminal))
+    return SwitchApplication(settings, servers, CodexAuth(), XrayProxy(directory, port, legacy, tools=tools, processes=platform.processes, locks=platform.locks), CodexProcess(LiveRunner(settings, platform.terminal, "codex")), ProcessDiagnostics(), profiles, JsonProjects(directory, locks=platform.locks), tools=tools, sessions=SessionAnalysis(LocalSessions(profiles)))

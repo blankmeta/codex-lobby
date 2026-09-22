@@ -11,12 +11,13 @@ from codex_switch.domain.vless import parse_vless
 
 
 class SwitchApplication:
-    def __init__(self, settings: Settings, servers: Servers, accounts: Accounts, proxy: Proxy, codex: Codex, diagnostics: Diagnostics, profiles: Profiles | None = None, projects: Projects | None = None, tools=None):
+    def __init__(self, settings: Settings, servers: Servers, accounts: Accounts, proxy: Proxy, codex: Codex, diagnostics: Diagnostics, profiles: Profiles | None = None, projects: Projects | None = None, tools=None, sessions=None):
         self.settings, self.servers = settings, servers
         self.accounts, self.proxy, self.codex = accounts, proxy, codex
         self.diagnostics = diagnostics
         self.profiles, self.projects = profiles, projects
         self.tools = tools
+        self.sessions = sessions
 
     def prepare_provider(self, provider_id):
         if self.tools:

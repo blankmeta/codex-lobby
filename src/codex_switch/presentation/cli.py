@@ -12,6 +12,7 @@ HELP = """RunLobby — Your accounts. Your limits. One place.
   rlb                                Open accounts, limits and settings
   runlobby                           Same menu; full command name
   rlb resume                         Choose an account and continue a session
+  rlb sessions                       Inspect local sessions and top actions
   rlb setup                          Set up an optional VLESS connection
   rlb --help-all                     Show commands for scripts and integrations
 
@@ -77,6 +78,9 @@ class CLI:
         if command == "setup":
             self.setup(force_proxy="--proxy" in args)
             return 0
+        if command == "sessions":
+            from .sessions import SessionMenu
+            return SessionMenu(self.app,c).run()
         if command == "stop":
             self.app.proxy.stop()
             c.say("✓ Proxy stopped. Saved accounts and links are kept.", "✓ Прокси остановлен. Аккаунты и ссылки сохранены.")

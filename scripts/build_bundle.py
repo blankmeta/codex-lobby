@@ -9,7 +9,8 @@ from codex_switch import __version__
 from codex_switch.infrastructure.tools import platform_key
 
 subprocess.run([sys.executable, "-m", "PyInstaller", "--noconfirm", "--clean", "--onedir",
-                "--name", "runlobby", "--collect-all", "codex_switch", "scripts/frozen_entry.py"], check=True)
+                "--name", "runlobby", "--collect-all", "codex_switch",
+                *(["--collect-all", "winpty"] if os.name == "nt" else []), "scripts/frozen_entry.py"], check=True)
 bundle = Path("dist/runlobby")
 suffix = ".exe" if os.name == "nt" else ""
 for name in ("rlb", "codex-lobby", "cxl", "codex-switch", "codex-vpn", "codex-proxy"):
